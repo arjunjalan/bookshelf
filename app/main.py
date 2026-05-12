@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -14,19 +15,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Bookshelf API")
-app.include_router(auth.router)
-app.include_router(books.router)
-app.include_router(reading_logs.router)
 
-
-@app.on_event("startup")
-def check_db() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     from app.database import get_engine
 
     with get_engine().connect() as conn:
         conn.execute(text("SELECT 1"))
     logger.info("Database connection OK")
+    yield
+
+
+app = FastAPI(title="Bookshelf API", lifespan=lifespan)
+app.include_router(auth.router)
+app.include_router(books.router)
+app.include_router(reading_logs.router)
 
 
 @app.get("/health")

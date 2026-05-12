@@ -21,13 +21,19 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 - [x] #12 JWT authentication: registration and login
 - [x] #13 CRUD endpoints: books
 - [x] #14 CRUD endpoints: reading records
-- [ ] #15 End-to-end smoke test
+- [x] #15 End-to-end smoke test
 
 Work top to bottom — each story depends on the one above it.
 
 ---
 
 ## Session Notes
+
+### 2026-05-11 — Issue #15 (E2E smoke test)
+- `tests/test_e2e.py`: 4 tests covering register, login, create book, log book, update to read (verifies pace_days), retrieve history, unauthenticated 401. Uses FastAPI TestClient against real DB.
+- `.github/workflows/ci.yml`: push-to-main CI using astral-sh/setup-uv, starts postgres via docker compose, waits for pg_isready, runs alembic upgrade head, then pytest.
+- Fixed `@app.on_event("startup")` deprecation — migrated to `lifespan` context manager (FastAPI 0.103+ pattern).
+- Phase 1 is complete.
 
 ### 2026-05-11 — Issue #14 (Reading log CRUD)
 - `app/schemas/reading_log.py`: ReadingLogCreate, ReadingLogRead, ReadingLogUpdate.
