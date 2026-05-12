@@ -14,7 +14,7 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 
 ## Stories
 
-- [ ] #8 Scaffold FastAPI project and Docker Compose
+- [x] #8 Scaffold FastAPI project and Docker Compose
 - [ ] #9 SQLAlchemy models: users, books, reading_logs, tags
 - [ ] #10 Alembic migrations: initial schema
 - [ ] #11 Supabase connection and environment config
@@ -29,4 +29,9 @@ Work top to bottom — each story depends on the one above it.
 
 ## Session Notes
 
-_No sessions run yet. The agent should update this section at the end of each session: what was completed, any decisions made, anything the next session needs to know._
+### 2026-05-11 — Issue #8 (Scaffold)
+- Scaffolded full FastAPI project layout: `app/{routers,services,adapters,models,schemas}`, `tests/`, `pyproject.toml`, `Dockerfile`, `docker-compose.yml`, `.env.example`, `.gitignore`.
+- Used **uv** as the package manager (already installed at `/home/aj/.local/bin/uv`); `uv.lock` committed for reproducible builds.
+- Dockerfile uses `uv sync --frozen --no-dev` via the official uv Docker image for fast, locked installs.
+- `docker-compose.yml` wires DATABASE_URL directly (no `env_file`) so the container hostname resolves to the `postgres` service; `.env` is for out-of-Docker local runs only.
+- `GET /health` returns `{"status":"ok"}` — verified live.
