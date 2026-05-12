@@ -18,7 +18,7 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 - [x] #9 SQLAlchemy models: users, books, reading_logs, tags
 - [x] #10 Alembic migrations: initial schema
 - [x] #11 Supabase connection and environment config
-- [ ] #12 JWT authentication: registration and login
+- [x] #12 JWT authentication: registration and login
 - [ ] #13 CRUD endpoints: books
 - [ ] #14 CRUD endpoints: reading records
 - [ ] #15 End-to-end smoke test
@@ -28,6 +28,16 @@ Work top to bottom — each story depends on the one above it.
 ---
 
 ## Session Notes
+
+### 2026-05-11 — Issue #12 (JWT auth)
+- `app/schemas/user.py`: UserCreate, UserRead, LoginRequest, Token schemas.
+- `app/services/auth.py`: bcrypt password hashing + JWT creation/decode (python-jose HS256).
+- `app/dependencies.py`: `get_current_user` FastAPI dependency using OAuth2PasswordBearer.
+- `app/routers/auth.py`: POST /auth/register (201, 409 on duplicate), POST /auth/login (200 token, 401 on bad creds).
+- Dropped `passlib[bcrypt]` — unmaintained and broken with bcrypt >= 4.x (detect_wrap_bug ValueError). Using `bcrypt` directly instead.
+- `pydantic[email]` added for EmailStr (forgot in original deps).
+- Token expiry defaults to 1440 minutes (24h), configurable via `ACCESS_TOKEN_EXPIRE_MINUTES`.
+- Lazy engine init in `database.py` fixed module-level import ordering (load_dotenv must run before DATABASE_URL is read).
 
 ### 2026-05-11 — Issue #11 (DB connection config)
 - `app/database.py`: sync SQLAlchemy engine (psycopg2) + `SessionLocal` + `get_db()` FastAPI dependency.

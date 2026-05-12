@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from app.routers import auth
+
 load_dotenv()
 
 logging.basicConfig(
@@ -13,13 +15,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Bookshelf API")
+app.include_router(auth.router)
 
 
 @app.on_event("startup")
 def check_db() -> None:
-    from app.database import engine
+    from app.database import get_engine
 
-    with engine.connect() as conn:
+    with get_engine().connect() as conn:
         conn.execute(text("SELECT 1"))
     logger.info("Database connection OK")
 
