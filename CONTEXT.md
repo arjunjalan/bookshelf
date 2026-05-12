@@ -17,7 +17,7 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 - [x] #8 Scaffold FastAPI project and Docker Compose
 - [x] #9 SQLAlchemy models: users, books, reading_logs, tags
 - [x] #10 Alembic migrations: initial schema
-- [ ] #11 Supabase connection and environment config
+- [x] #11 Supabase connection and environment config
 - [ ] #12 JWT authentication: registration and login
 - [ ] #13 CRUD endpoints: books
 - [ ] #14 CRUD endpoints: reading records
@@ -28,6 +28,13 @@ Work top to bottom — each story depends on the one above it.
 ---
 
 ## Session Notes
+
+### 2026-05-11 — Issue #11 (DB connection config)
+- `app/database.py`: sync SQLAlchemy engine (psycopg2) + `SessionLocal` + `get_db()` FastAPI dependency.
+- Pool tuned for Supabase free tier: pool_size=5, max_overflow=10, pool_recycle=1800, pool_pre_ping=True.
+- Startup event in `main.py` runs `SELECT 1` to confirm DB is reachable on boot.
+- `.env.example` updated with Supabase pooler URL format (use port 6543 for serverless, 5432 for Render).
+- Supabase project provisioning is a manual step — user needs to set DATABASE_URL in `.env` / Render env vars.
 
 ### 2026-05-11 — Issue #10 (Alembic migrations)
 - Alembic initialized; `env.py` pulls `DATABASE_URL` from env via `python-dotenv` and targets `Base.metadata`.
