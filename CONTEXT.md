@@ -20,7 +20,7 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 - [x] #11 Supabase connection and environment config
 - [x] #12 JWT authentication: registration and login
 - [x] #13 CRUD endpoints: books
-- [ ] #14 CRUD endpoints: reading records
+- [x] #14 CRUD endpoints: reading records
 - [ ] #15 End-to-end smoke test
 
 Work top to bottom — each story depends on the one above it.
@@ -28,6 +28,12 @@ Work top to bottom — each story depends on the one above it.
 ---
 
 ## Session Notes
+
+### 2026-05-11 — Issue #14 (Reading log CRUD)
+- `app/schemas/reading_log.py`: ReadingLogCreate, ReadingLogRead, ReadingLogUpdate.
+- `app/routers/reading_logs.py`: POST /reading-logs (201), GET /reading-logs (filterable by status), GET/PATCH /reading-logs/{id}. User isolation enforced in every query (filter by user_id == current_user.id).
+- `pace_days` auto-computed on create and recomputed on every PATCH (service layer not needed here — computation is a single expression).
+- Bug found and fixed: SQLAlchemy `Enum(ReadingStatus)` stores enum NAMES by default (e.g., "READING") not VALUES ("reading"). Fixed with `values_callable=lambda x: [e.value for e in x]` on the mapped column. This must be kept consistent with the PostgreSQL type's lowercase values.
 
 ### 2026-05-11 — Issue #13 (Book CRUD)
 - `app/schemas/book.py`: BookCreate, BookRead, BookUpdate (all optional fields for PATCH).

@@ -32,7 +32,8 @@ class ReadingLog(Base):
         UUID(as_uuid=True), ForeignKey("books.id", ondelete="CASCADE"), nullable=False, index=True
     )
     status: Mapped[ReadingStatus] = mapped_column(
-        Enum(ReadingStatus, name="readingstatus"), nullable=False
+        Enum(ReadingStatus, name="readingstatus", values_callable=lambda x: [e.value for e in x]),
+        nullable=False,
     )
     start_date: Mapped[Optional[date]] = mapped_column(Date)
     end_date: Mapped[Optional[date]] = mapped_column(Date)
