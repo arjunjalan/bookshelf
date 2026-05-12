@@ -16,7 +16,7 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 
 - [x] #8 Scaffold FastAPI project and Docker Compose
 - [x] #9 SQLAlchemy models: users, books, reading_logs, tags
-- [ ] #10 Alembic migrations: initial schema
+- [x] #10 Alembic migrations: initial schema
 - [ ] #11 Supabase connection and environment config
 - [ ] #12 JWT authentication: registration and login
 - [ ] #13 CRUD endpoints: books
@@ -28,6 +28,13 @@ Work top to bottom — each story depends on the one above it.
 ---
 
 ## Session Notes
+
+### 2026-05-11 — Issue #10 (Alembic migrations)
+- Alembic initialized; `env.py` pulls `DATABASE_URL` from env via `python-dotenv` and targets `Base.metadata`.
+- `alembic.ini` no longer hardcodes a URL.
+- Initial migration written manually (no live DB at init time); uses `op.execute("CREATE TYPE ...")` for the `readingstatus` enum because `sa.Enum(create_type=False)` is silently ignored in SQLAlchemy 2.0.49 — only `postgresql.ENUM(create_type=False)` respects that flag. Enum column in the migration uses `postgresql.ENUM(..., create_type=False)` to avoid double-creation.
+- `alembic upgrade head` creates all 5 tables; `downgrade -1` drops them cleanly. Verified live against postgres:16-alpine via Docker (accessed via `sg docker`).
+- Docker socket requires `sg docker -c "..."` in non-interactive shells; user's session doesn't have the docker group active. To fix permanently: `newgrp docker` in a new terminal or re-login.
 
 ### 2026-05-11 — Issue #9 (SQLAlchemy models)
 - Four models: User, Book, ReadingLog, Tag; association table reading_log_tags.
