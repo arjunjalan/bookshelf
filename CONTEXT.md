@@ -15,7 +15,7 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 ## Stories
 
 - [x] #8 Scaffold FastAPI project and Docker Compose
-- [ ] #9 SQLAlchemy models: users, books, reading_logs, tags
+- [x] #9 SQLAlchemy models: users, books, reading_logs, tags
 - [ ] #10 Alembic migrations: initial schema
 - [ ] #11 Supabase connection and environment config
 - [ ] #12 JWT authentication: registration and login
@@ -28,6 +28,14 @@ Work top to bottom — each story depends on the one above it.
 ---
 
 ## Session Notes
+
+### 2026-05-11 — Issue #9 (SQLAlchemy models)
+- Four models: User, Book, ReadingLog, Tag; association table reading_log_tags.
+- SQLAlchemy 2.0 declarative style with `Mapped`/`mapped_column`.
+- UUID PKs throughout (PostgreSQL `UUID(as_uuid=True)`).
+- `ReadingStatus` is a `str, enum.Enum` (values: read/reading/want_to_read) — JSON-serializable for Pydantic.
+- `pace_days` stored as plain Integer column; service layer will compute and persist it (not a DB computed column — simpler and analytics-friendly).
+- All relationships verified in Python shell (5 tables registered in metadata).
 
 ### 2026-05-11 — Issue #8 (Scaffold)
 - Scaffolded full FastAPI project layout: `app/{routers,services,adapters,models,schemas}`, `tests/`, `pyproject.toml`, `Dockerfile`, `docker-compose.yml`, `.env.example`, `.gitignore`.
