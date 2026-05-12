@@ -1,14 +1,14 @@
 # CLAUDE.md — Bookshelf
 
-This file is the architectural brief for every Claude Code session in this repo. Read it before touching any code.
+Architectural brief for every Claude Code session in this repo. Read this and `CONTEXT.md` before touching any code.
 
 ---
 
 ## What This Is
 
-Bookshelf is a personal book-logging and reading companion app. Users log books, track reading history, and — across later phases — get analytics, ML-powered recommendations, and a conversational reading companion backed by OpenAI.
+Bookshelf is a personal book-logging and reading companion app. Users log books, track reading history, and — across phases — get analytics, ML-powered recommendations, and a conversational reading companion backed by OpenAI.
 
-Product context, ADRs, and design decisions live in the Obsidian vault. This file covers what you need to build.
+Product context, ADRs, and design decisions live in the Obsidian vault (arjunjalan/second-brain).
 
 ---
 
@@ -18,12 +18,12 @@ Product context, ADRs, and design decisions live in the Obsidian vault. This fil
 |---|---|
 | Backend | FastAPI (Python) |
 | Database | PostgreSQL via Supabase — SQLAlchemy ORM, Alembic migrations |
-| Containerisation | Docker Compose for local development |
-| Frontend | React + Vite + Tailwind CSS (Phase 2+) |
+| Containerisation | Docker Compose (local development) |
+| Frontend | React + Vite + Tailwind CSS |
 | Auth | JWT — bcrypt passwords, no server-side session state |
-| Book metadata | Open Library API via MetadataAdapter (Phase 3+) |
-| ML | scikit-learn via MLAdapter (Phase 5+) |
-| LLM | OpenAI API via LLMAdapter (Phase 6+) |
+| Book metadata | Open Library API via MetadataAdapter |
+| ML | scikit-learn via MLAdapter |
+| LLM | OpenAI API via LLMAdapter |
 | Hosting | Render (API) · Vercel (frontend) · Supabase (database) |
 
 ---
@@ -60,46 +60,28 @@ Non-negotiable. Every code decision must pass against these.
 
 ---
 
-## Current Phase: Phase 1 — Core Data Model
+## Data Model
 
-**Goal:** A stable backend that can store books and reading records.
+`reading_logs` is the most important table — Phase 4 analytics and Phase 5 ML train on it. These fields must exist from Phase 1, even if unused until later phases:
 
-**Build in this order:**
+- `rating` (1–5 integer)
+- `start_date`, `end_date` (pace computation)
+- `pace_days` (computed: end_date minus start_date)
+- `mood` (optional free text, Phase 5 signal)
+- `notes` (free text)
 
-1. FastAPI skeleton + Docker Compose → issue #8
-2. SQLAlchemy models: `users`, `books`, `reading_logs`, `tags` → issue #9
-3. Alembic initial migration → issue #10
-4. Supabase connection + environment config → issue #11
-5. JWT auth: register + login → issue #12
-6. CRUD endpoints: books → issue #13
-7. CRUD endpoints: reading logs → issue #14
-8. End-to-end smoke test → issue #15
-
-**Done when:** An authenticated user can log a book and retrieve their reading history via the API.
+Do not strip these to simplify early phases. Historical records cannot be reconstructed.
 
 ---
 
-## Data Model Notes
-
-`reading_logs` is the most important table in the system — Phase 4 analytics and Phase 5 ML train on it. Capture signal from day one, even if unused in Phase 1:
-
-- `rating` — integer 1–5
-- `start_date`, `end_date` — for pace computation
-- `pace_days` — computed field (end_date minus start_date)
-- `mood` — optional free text, Phase 5 feature signal
-- `notes` — free text
-
-Do not strip these to simplify Phase 1. Historical records cannot be reconstructed later.
-
----
-
-## Key Conventions
+## Conventions
 
 - Pydantic schemas are separate from ORM models — never return a SQLAlchemy model directly from a route
-- Use separate `Create`, `Read`, `Update` Pydantic schemas per entity
+- Separate `Create`, `Read`, `Update` Pydantic schemas per entity
 - All data endpoints require authentication via `current_user` dependency
 - Users can only access their own data — enforce in DB queries, not just middleware
-- Use Python `logging` with structured output — no print statements
+- Python `logging` with structured output — no print statements
+- `pyproject.toml` for dependency management
 
 ---
 
@@ -115,9 +97,8 @@ Docs: `http://localhost:8000/docs`
 
 ---
 
-## Work Items
+## Navigation
 
-GitHub Project: https://github.com/users/arjunjalan/projects/1  
-Phase 1 epic: https://github.com/arjunjalan/bookshelf/issues/1
-
-Pick up the next open story from the Phase 1 epic, implement it, and close the issue when done.
+- Current work and session state: `CONTEXT.md`
+- GitHub Project (all phases): https://github.com/users/arjunjalan/projects/1
+- Product vault (ADRs, vision, roadmap): https://github.com/arjunjalan/second-brain
