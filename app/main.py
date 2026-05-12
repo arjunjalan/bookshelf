@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from sqlalchemy import text
 
-from app.routers import auth
+from app.routers import auth, books
 
 load_dotenv()
 
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Bookshelf API")
 app.include_router(auth.router)
+app.include_router(books.router)
 
 
 @app.on_event("startup")

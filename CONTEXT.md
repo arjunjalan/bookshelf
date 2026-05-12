@@ -19,7 +19,7 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 - [x] #10 Alembic migrations: initial schema
 - [x] #11 Supabase connection and environment config
 - [x] #12 JWT authentication: registration and login
-- [ ] #13 CRUD endpoints: books
+- [x] #13 CRUD endpoints: books
 - [ ] #14 CRUD endpoints: reading records
 - [ ] #15 End-to-end smoke test
 
@@ -28,6 +28,12 @@ Work top to bottom — each story depends on the one above it.
 ---
 
 ## Session Notes
+
+### 2026-05-11 — Issue #13 (Book CRUD)
+- `app/schemas/book.py`: BookCreate, BookRead, BookUpdate (all optional fields for PATCH).
+- `app/routers/books.py`: POST /books (201), GET /books (paginated, skip/limit), GET/PATCH/DELETE /books/{id}. All require Bearer token.
+- PATCH uses `model_dump(exclude_unset=True)` so unset fields are not overwritten.
+- Books are a shared catalog (no user_id) — CLAUDE.md "users only access their own data" applies to reading logs, not the book catalog.
 
 ### 2026-05-11 — Issue #12 (JWT auth)
 - `app/schemas/user.py`: UserCreate, UserRead, LoginRequest, Token schemas.
