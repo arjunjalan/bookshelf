@@ -17,45 +17,46 @@ router = APIRouter(prefix="/books", tags=["books"])
 @router.post("", response_model=BookRead, status_code=status.HTTP_201_CREATED)
 def create_book(
     body: BookCreate,
-    db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     book = Book(**body.model_dump())
     db.add(book)
     db.commit()
     db.refresh(book)
     logger.info("Created book %s", book.id)
-    return book
+    return BookRead.model_validate(book)
 
 
 @router.get("", response_model=list[BookRead])
 def list_books(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return db.query(Book).order_by(Book.created_at.desc()).offset(skip).limit(limit).all()
+    books = db.query(Book).order_by(Book.created_at.desc()).offset(skip).limit(limit).all()
+    return [BookRead.model_validate(book) for book in books]
 
 
 @router.get("/{book_id}", response_model=BookRead)
 def get_book(
     book_id: uuid.UUID,
-    db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     book = db.get(Book, book_id)
     if book is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
-    return book
+    return BookRead.model_validate(book)
 
 
 @router.patch("/{book_id}", response_model=BookRead)
 def update_book(
     book_id: uuid.UUID,
     body: BookUpdate,
-    db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     book = db.get(Book, book_id)
     if book is None:
@@ -64,14 +65,14 @@ def update_book(
         setattr(book, field, value)
     db.commit()
     db.refresh(book)
-    return book
+    return BookRead.model_validate(book)
 
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_book(
     book_id: uuid.UUID,
-    db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     book = db.get(Book, book_id)
     if book is None:

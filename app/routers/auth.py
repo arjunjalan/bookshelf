@@ -27,7 +27,7 @@ def register(body: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered",
         )
     logger.info("Registered user %s", user.id)
-    return user
+    return UserRead.model_validate(user)
 
 
 @router.post("/login", response_model=Token)

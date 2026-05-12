@@ -8,7 +8,7 @@ from jose import JWTError, jwt
 logger = logging.getLogger(__name__)
 
 ALGORITHM = "HS256"
-_SECRET_KEY = os.environ.get("SECRET_KEY", "changeme-in-production")
+_SECRET_KEY = os.environ["SECRET_KEY"]
 _TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
 

@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.reading_log import ReadingStatus
 
@@ -12,7 +12,7 @@ class ReadingLogCreate(BaseModel):
     status: ReadingStatus
     start_date: Optional[date] = None
     end_date: Optional[date] = None
-    rating: Optional[int] = None
+    rating: Optional[int] = Field(default=None, ge=1, le=5)
     notes: Optional[str] = None
     mood: Optional[str] = None
 
@@ -38,6 +38,6 @@ class ReadingLogUpdate(BaseModel):
     status: Optional[ReadingStatus] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
-    rating: Optional[int] = None
+    rating: Optional[int] = Field(default=None, ge=1, le=5)
     notes: Optional[str] = None
     mood: Optional[str] = None
