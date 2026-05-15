@@ -124,24 +124,14 @@ This keeps the `main` working directory clean and makes it safe to work on multi
 
 ## Running Locally
 
-**Backend**
 ```bash
-cp .env.example .env   # fill in DATABASE_URL, SECRET_KEY
-docker compose up -d
-docker compose exec api sh -c 'alembic upgrade head'
+cp .env.example .env           # fill in DATABASE_URL, SECRET_KEY (first time only)
+./scripts/start.sh             # start Docker services, run migrations, start frontend
+./scripts/stop.sh              # stop everything
 ```
 
-API: `http://localhost:8000` · Docs: `http://localhost:8000/docs`
-
-**Frontend**
-```bash
-cd frontend
-cp .env.example .env   # VITE_API_URL=http://localhost:8000
-npm install
-npm run dev
-```
-
-App: `http://localhost:5173`
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:8000` · Docs: `http://localhost:8000/docs`
 
 ---
 

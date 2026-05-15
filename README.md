@@ -45,40 +45,26 @@ bookshelf/
 
 **Prerequisites:** Docker, Docker Compose, [uv](https://docs.astral.sh/uv/), Node.js 18+
 
-### Backend
-
 ```bash
 git clone https://github.com/arjunjalan/bookshelf.git
 cd bookshelf
 cp .env.example .env          # fill in DATABASE_URL and SECRET_KEY
-docker compose up -d
-docker compose exec api sh -c 'alembic upgrade head'
+./scripts/start.sh
 ```
 
-API: `http://localhost:8000`  
-Interactive docs: `http://localhost:8000/docs`
-
-To stop and remove the containers:
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:8000`
+- API docs: `http://localhost:8000/docs`
 
 ```bash
-docker compose down
+./scripts/stop.sh             # stop everything
 ```
-
-### Frontend
-
-```bash
-cd frontend
-cp .env.example .env          # VITE_API_URL=http://localhost:8000
-npm install
-npm run dev
-```
-
-App: `http://localhost:5173`
 
 ### Tests
 
 ```bash
-uv run pytest
+uv run pytest                 # backend unit + integration tests
+npx playwright test           # E2E smoke tests (requires servers running)
 ```
 
 ## API Overview
@@ -99,6 +85,7 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 | `GET` | `/reading-logs/{id}` | Get a reading record |
 | `PATCH` | `/reading-logs/{id}` | Update a reading record |
 | `DELETE` | `/reading-logs/{id}` | Remove a book from your shelf |
+| `GET` | `/metadata/search?q=` | Search Open Library for book metadata |
 | `GET` | `/health` | Health check |
 
 Reading status values: `reading`, `read`, `want_to_read`
@@ -107,7 +94,7 @@ Reading status values: `reading`, `read`, `want_to_read`
 
 - [x] **Phase 1** — Core backend: auth, book catalog, reading logs, E2E tests
 - [x] **Phase 2** — Frontend (React + Vite + Tailwind)
-- [ ] **Phase 3** — Book metadata enrichment via Open Library API
+- [x] **Phase 3** — Book metadata enrichment via Open Library API
 - [ ] **Phase 4** — Reading analytics
 - [ ] **Phase 5** — ML predictions and recommendations
 - [ ] **Phase 6** — Natural language interface (OpenAI)
