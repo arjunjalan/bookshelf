@@ -14,15 +14,13 @@ Phases 1, 2, and 3 are complete and closed.
 
 ## Phase 4 — In Progress
 
-- [ ] #46 Phase 4.1 — Analytics data layer (Alembic views + AnalyticsService)
-- [ ] #47 Phase 4.2 — Analytics API endpoints (schemas + /analytics router)
-- [ ] #48 Phase 4.3 — Analytics dashboard frontend (Stats page + Recharts)
+- [ ] #46 Phase 4.1 — Analytics data layer (PR #49 open)
+- [ ] #47 Phase 4.2 — Analytics API endpoints (PR #49 open)
+- [ ] #48 Phase 4.3 — Analytics dashboard frontend (PR #50 open)
 
-Implementation plan:
-- PR 1: 4.1 + 4.2 together (service + router are tightly coupled)
-- PR 2: 4.3 alone (pure frontend, verified against live API)
-
-Design note: views as specified in #46 have no `user_id` filter — must add `user_id` to each view's SELECT and filter in the service layer to preserve per-user data isolation.
+PRs:
+- PR #49 — `phase4-analytics-api`: migration 0005 (4 views), services/analytics.py, schemas/analytics.py, routers/analytics.py, main.py update
+- PR #50 — `phase4-analytics-frontend`: recharts install, Stats.jsx, App.jsx route, Layout.jsx nav links
 
 ---
 
