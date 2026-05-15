@@ -85,6 +85,25 @@ Do not strip these to simplify early phases. Historical records cannot be recons
 
 ---
 
+## Working Practice
+
+**Always use a git worktree for any code change — never edit files directly on `main`.**
+
+1. Create a worktree before touching any code:
+   ```bash
+   git worktree add ../bookshelf-<feature> -b <branch-name>
+   ```
+2. Do all edits inside that worktree directory.
+3. Commit there, push the branch, open a PR — then merge to `main`.
+4. Remove the worktree when done:
+   ```bash
+   git worktree remove ../bookshelf-<feature>
+   ```
+
+This keeps the `main` working directory clean and makes it safe to work on multiple things in parallel.
+
+---
+
 ## Running Locally
 
 ```bash
