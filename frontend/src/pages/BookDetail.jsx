@@ -68,7 +68,7 @@ export default function BookDetail() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: () => client.delete(`/reading-logs/${log.id}`),
+    mutationFn: () => client.delete(`/books/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reading-logs'] })
       navigate('/books')

@@ -1,57 +1,54 @@
-# Phase 1 Architecture Review
+# End-to-End Web App Review
 
-Codex reviewed Claude's Phase 1 implementation against the architectural
-principles in `AGENTS.md` and the Phase 1 definition in `CONTEXT.md`.
+Codex reviewed the current full-stack Bookshelf app against the repo
+instructions in the updated `AGENTS.md` and the actual frontend/API behavior
+in the codebase.
 
-## Review Scope
+## Scope
 
-- FastAPI routers, schemas, services, and dependencies
-- SQLAlchemy models and Alembic migrations
-- Authentication and environment configuration
-- End-to-end test coverage for the Phase 1 API flow
+- React + Vite frontend pages, routing, auth context, and API client
+- FastAPI auth, books, and reading-log endpoints
+- SQLAlchemy models and Alembic constraints relevant to user-facing flows
+- End-to-end contract between frontend actions and backend responses
 
 ## Findings
 
-1. `reading_logs.rating` was not constrained to the required 1-5 range.
-   `AGENTS.md` identifies `reading_logs` as the critical future analytics and
-   ML table, so Codex recommended enforcing the range in both API validation
-   and the database.
+1. ~~**High: "Remove from shelf" deletes only the reading log, not the book.**
+   `frontend/src/pages/BookDetail.jsx` calls
+   `DELETE /reading-logs/${log.id}` for the remove action. The book remains in
+   the database, direct `/books/:id` still loads, and the same button can later
+   attempt `/reading-logs/undefined`. Since the backend already supports
+   cascading `DELETE /books/{book_id}`, the frontend should likely delete the
+   book instead of only deleting its log.~~ **Fixed in PR #30** — frontend now calls `DELETE /books/{id}`; cascade removes the log.
 
-2. Protected routes opened a database session before resolving authentication.
-   This meant unauthenticated requests could fail on database configuration or
-   availability before returning `401`.
+2. ~~**Medium: duplicate ISBN conflicts return an unhandled server error.**
+   `app/routers/books.py` commits creates and updates without catching
+   `IntegrityError`, while the model and migration enforce unique
+   `(user_id, isbn)` when `isbn` is present. A user adding or editing to a
+   duplicate ISBN gets a `500` instead of a clean `409` or validation message.~~ **Fixed in PR #30** — `IntegrityError` caught in create and update, returns 409.
 
-3. Routers returned SQLAlchemy ORM objects directly. FastAPI response models
-   serialized those objects, but the project convention says routes should not
-   return ORM models directly.
+3. ~~**Medium: expired or invalid tokens leave the frontend in a dead
+   authenticated state.** `AuthContext` treats any stored `bs_token` as
+   authenticated, and the Axios client only attaches the token. There is no
+   `401` response handling to clear local storage and redirect to login. After
+   token expiry, protected pages stay accessible while API queries fail.~~ **Fixed in PR #30** — Axios response interceptor clears storage and redirects to `/login` on 401.
 
-4. JWT signing used a known runtime fallback secret. Codex recommended keeping
-   secrets documented in `.env.example` while requiring runtime configuration
-   to provide real values.
+4. **Low: backend accepts negative reading pace.**
+   `app/services/reading_logs.py` computes `end_date - start_date` without
+   validating date order. The add-book form blocks this client-side, but direct
+   API calls or future UI paths can persist negative `pace_days`.
 
-5. Reading-log business logic lived in the router. The pace calculation and
-   persistence/update workflow were small, but `AGENTS.md` calls for thin route
-   handlers and business logic in `app/services/`.
+5. **Low: frontend API base URL bypasses the configured dev proxy and masks
+   missing deployment config.** `frontend/vite.config.js` defines a `/api`
+   proxy, and `frontend/.env.example` documents `VITE_API_URL`, but
+   `frontend/src/api/client.js` falls back to `http://localhost:8000`. If
+   `VITE_API_URL` is missing in a hosted frontend build, browser requests go to
+   the user's own machine instead of the Render API. A relative `/api` default
+   or a fail-fast missing-env check would better match the updated frontend
+   convention that `VITE_API_URL` controls the backend URL.
 
-## Changes Made
+## Verification
 
-- Added Pydantic `rating` validation with `ge=1` and `le=5` for reading-log
-  create and update schemas.
-- Added Alembic migration `0002_add_reading_log_rating_check.py` with a
-  database check constraint for nullable ratings between 1 and 5.
-- Added `app/services/reading_logs.py` for pace calculation, create, list,
-  lookup, and update behavior.
-- Updated reading-log routes to delegate business logic to the service layer.
-- Reordered protected route dependencies so authentication resolves before
-  database session creation.
-- Updated book, reading-log, and registration routes to return explicit
-  Pydantic schema instances instead of ORM objects.
-- Removed the application-level fallback JWT secret and made Docker Compose
-  read `SECRET_KEY` from the environment.
-
-## Result
-
-The Phase 1 implementation is now closer to the non-negotiable principles in
-`AGENTS.md`: durable data is protected at the database boundary, routers are
-thinner, protected endpoints authenticate first, schema changes are tracked via
-Alembic, and runtime secrets must come from the environment.
+- `npm run lint` passed.
+- `npm run build` passed.
+- `uv run pytest` passed: 7 tests.

@@ -2,6 +2,7 @@ import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -22,7 +23,11 @@ def create_book(
 ):
     book = Book(**body.model_dump(), user_id=current_user.id)
     db.add(book)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A book with this ISBN already exists")
     db.refresh(book)
     logger.info("Created book %s", book.id)
     return BookRead.model_validate(book)
@@ -70,7 +75,11 @@ def update_book(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(book, field, value)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A book with this ISBN already exists")
     db.refresh(book)
     return BookRead.model_validate(book)
 
