@@ -12,6 +12,20 @@ Phases 1, 2, and 3 are complete and closed.
 
 ---
 
+## Phase 4 — In Progress
+
+- [ ] #46 Phase 4.1 — Analytics data layer (Alembic views + AnalyticsService)
+- [ ] #47 Phase 4.2 — Analytics API endpoints (schemas + /analytics router)
+- [ ] #48 Phase 4.3 — Analytics dashboard frontend (Stats page + Recharts)
+
+Implementation plan:
+- PR 1: 4.1 + 4.2 together (service + router are tightly coupled)
+- PR 2: 4.3 alone (pure frontend, verified against live API)
+
+Design note: views as specified in #46 have no `user_id` filter — must add `user_id` to each view's SELECT and filter in the service layer to preserve per-user data isolation.
+
+---
+
 ## Phase 3 — Complete
 
 - [x] #32 Phase 3.1 — MetadataAdapter protocol + OpenLibraryAdapter
