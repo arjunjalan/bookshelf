@@ -42,9 +42,10 @@ export default function BookDetail() {
   const [draft, setDraft] = useState(null)
   const [saveError, setSaveError] = useState('')
 
-  const { data: book, isLoading: bookLoading } = useQuery({
+  const { data: book, isLoading: bookLoading, isError: bookError } = useQuery({
     queryKey: ['book', id],
     queryFn: () => client.get(`/books/${id}`).then((r) => r.data),
+    retry: false,
   })
 
   const { data: logs, isLoading: logsLoading } = useQuery({
@@ -117,8 +118,17 @@ export default function BookDetail() {
     )
   }
 
-  if (!book) {
-    return <p className="text-sm text-stone-500">Book not found.</p>
+  if (bookError || (!bookLoading && !book)) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <p className="text-6xl font-bold text-stone-200 mb-2">404</p>
+        <p className="text-lg font-semibold text-stone-900 mb-1">Book not found</p>
+        <p className="text-sm text-stone-500 mb-6">This book doesn&apos;t exist on your shelf.</p>
+        <Link to="/books" className="text-sm text-stone-900 font-medium hover:underline">
+          Back to my shelf
+        </Link>
+      </div>
+    )
   }
 
   return (
