@@ -124,6 +124,8 @@ This keeps the `main` working directory clean and makes it safe to work on multi
 
 **When a PR merges, close the corresponding GitHub issue(s) immediately** — comment with the PR number so the close is traceable. Close story issues individually and the parent epic once all stories are done.
 
+**After merging a PR that adds frontend npm dependencies, run `npm install` in `frontend/` on main** — worktrees install into their own `node_modules` and the main repo's `node_modules` is not updated automatically on merge.
+
 ---
 
 ## Running Locally
