@@ -8,3 +8,7 @@ __pycache__/
 dist/
 build/
 *.sqlite3
+
+# dev server runtime files (created by scripts/start.sh)
+.frontend.log
+.frontend.pid
