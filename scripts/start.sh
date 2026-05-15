@@ -23,10 +23,6 @@ fi
 echo "Starting Docker services..."
 docker compose -f "$ROOT/docker-compose.yml" up -d
 
-echo "Waiting for Postgres..."
-timeout 60 bash -c \
-  "until docker compose -f '$ROOT/docker-compose.yml' exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done"
-
 echo "Running migrations..."
 docker compose -f "$ROOT/docker-compose.yml" exec -T api sh -c 'alembic upgrade head'
 
