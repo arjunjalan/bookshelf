@@ -2,12 +2,13 @@ import logging
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
-from sqlalchemy import text
-
-from app.routers import auth, books, reading_logs
 
 load_dotenv()
+
+from fastapi import FastAPI  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+
+from app.routers import auth, books, reading_logs  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,

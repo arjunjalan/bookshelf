@@ -8,8 +8,17 @@ from jose import JWTError, jwt
 logger = logging.getLogger(__name__)
 
 ALGORITHM = "HS256"
-_SECRET_KEY = os.environ["SECRET_KEY"]
-_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+
+
+def _secret_key() -> str:
+    key = os.environ.get("SECRET_KEY")
+    if not key:
+        raise RuntimeError("SECRET_KEY environment variable is not set")
+    return key
+
+
+def _token_expire_minutes() -> int:
+    return int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
 
 def hash_password(password: str) -> str:
@@ -21,14 +30,13 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(subject: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=_token_expire_minutes())
     payload = {"sub": subject, "exp": expire}
-    return jwt.encode(payload, _SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, _secret_key(), algorithm=ALGORITHM)
 
 
 def decode_access_token(token: str) -> str:
-    """Return the subject (user id) or raise JWTError."""
-    payload = jwt.decode(token, _SECRET_KEY, algorithms=[ALGORITHM])
+    payload = jwt.decode(token, _secret_key(), algorithms=[ALGORITHM])
     sub: str | None = payload.get("sub")
     if sub is None:
         raise JWTError("Missing subject in token")

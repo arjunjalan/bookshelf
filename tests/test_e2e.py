@@ -80,3 +80,64 @@ def test_log_book_and_retrieve_history(auth_headers):
 def test_unauthenticated_returns_401():
     assert client.get("/books").status_code == 401
     assert client.get("/reading-logs").status_code == 401
+
+
+# ---------------------------------------------------------------------------
+# Multi-user ownership tests
+# ---------------------------------------------------------------------------
+
+
+def _register_and_login(suffix: str) -> dict:
+    email = f"e2e_{suffix}_{uuid.uuid4().hex[:8]}@example.com"
+    client.post("/auth/register", json={"email": email, "password": "testpass123"})
+    token = client.post("/auth/login", json={"email": email, "password": "testpass123"}).json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_duplicate_isbn_across_users():
+    """Two different users can add the same ISBN — uniqueness is per-user."""
+    headers_a = _register_and_login("isbn_a")
+    headers_b = _register_and_login("isbn_b")
+    payload = {"title": "Dune", "author": "Frank Herbert", "isbn": "9780441013593"}
+
+    r_a = client.post("/books", json=payload, headers=headers_a)
+    assert r_a.status_code == 201
+
+    r_b = client.post("/books", json=payload, headers=headers_b)
+    assert r_b.status_code == 201
+
+
+def test_user_cannot_log_another_users_book():
+    """User B cannot create a reading log against a book owned by User A."""
+    headers_a = _register_and_login("log_owner")
+    headers_b = _register_and_login("log_thief")
+
+    book = client.post(
+        "/books",
+        json={"title": "User A Book", "author": "Author A"},
+        headers=headers_a,
+    ).json()
+
+    r = client.post(
+        "/reading-logs",
+        json={"book_id": book["id"], "status": "reading"},
+        headers=headers_b,
+    )
+    assert r.status_code == 404
+
+
+def test_user_cannot_see_another_users_books():
+    """User B's book list and direct GET return nothing for User A's books."""
+    headers_a = _register_and_login("vis_a")
+    headers_b = _register_and_login("vis_b")
+
+    book = client.post(
+        "/books",
+        json={"title": "Private Book", "author": "Author A"},
+        headers=headers_a,
+    ).json()
+
+    books_b = client.get("/books", headers=headers_b).json()
+    assert not any(b["id"] == book["id"] for b in books_b)
+
+    assert client.get(f"/books/{book['id']}", headers=headers_b).status_code == 404

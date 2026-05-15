@@ -23,6 +23,8 @@ def create_reading_log(
     db: Session = Depends(get_db),
 ):
     log = reading_log_service.create_reading_log(db, current_user.id, body)
+    if log is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
     logger.info("Created reading log %s for user %s", log.id, current_user.id)
     return ReadingLogRead.model_validate(log)
 

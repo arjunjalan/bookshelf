@@ -20,6 +20,8 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # DEV-ONLY: existing books cannot be attributed to a user, so we clear them.
+    # Never run this migration against any environment with real user data.
     op.execute("DELETE FROM reading_logs")
     op.execute("DELETE FROM books")
     op.add_column(

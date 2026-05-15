@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 
 class Book(Base):
     __tablename__ = "books"
+    __table_args__ = (
+        Index("uq_books_user_isbn", "user_id", "isbn", unique=True, postgresql_where="isbn IS NOT NULL"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -25,7 +28,7 @@ class Book(Base):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     author: Mapped[str] = mapped_column(String(500), nullable=False)
     genre: Mapped[Optional[str]] = mapped_column(String(100))
-    isbn: Mapped[Optional[str]] = mapped_column(String(20), unique=True, index=True)
+    isbn: Mapped[Optional[str]] = mapped_column(String(20))
     cover_url: Mapped[Optional[str]] = mapped_column(String(2048))
     description: Mapped[Optional[str]] = mapped_column(Text)
     page_count: Mapped[Optional[int]] = mapped_column(Integer)
