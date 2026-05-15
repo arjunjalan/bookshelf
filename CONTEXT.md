@@ -29,6 +29,15 @@ Work top to bottom — each story depends on the one above it.
 
 ## Session Notes
 
+### 2026-05-15 — Architecture review: books become user-scoped
+- `app/models/book.py`: added `user_id` FK to `users` with `ondelete="CASCADE"` and index.
+- `app/schemas/book.py`: `BookRead` now includes `user_id`. Added missing `Optional` import to `user.py`.
+- `app/routers/books.py`: all endpoints (list, get, patch, delete) now filter by `current_user.id`. `create_book` sets `user_id=current_user.id`. Books are no longer a shared catalog.
+- `alembic/versions/0003_books_user_id.py`: migration adds `user_id NOT NULL` to `books`, preceded by `DELETE FROM reading_logs / books` to clear dev data that can't be backfilled.
+- `Dockerfile`: added `ENV PATH="/app/.venv/bin:$PATH"` so venv binaries (alembic, etc.) resolve without the full path.
+- Docker: `newgrp docker` fixes the permission-denied error for the current terminal session. `docker compose exec api sh -c 'alembic upgrade head'` is the correct invocation (bare `alembic` fails without the `sh -c` wrapper).
+- Full down/up/migrate cycle verified clean from a fresh volume.
+
 ### 2026-05-11 — Issue #15 (E2E smoke test)
 - `tests/test_e2e.py`: 4 tests covering register, login, create book, log book, update to read (verifies pace_days), retrieve history, unauthenticated 401. Uses FastAPI TestClient against real DB.
 - `.github/workflows/ci.yml`: push-to-main CI using astral-sh/setup-uv, starts postgres via docker compose, waits for pg_isready, runs alembic upgrade head, then pytest.
