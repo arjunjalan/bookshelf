@@ -6,10 +6,24 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 3 — Book Metadata Enrichment**
-Open Library API integration via MetadataAdapter; search by title or author, auto-populate metadata, cover images.
+**Phase 4 — Reading Analytics**
 
-Phases 1 and 2 are complete and closed.
+Phases 1, 2, and 3 are complete and closed.
+
+---
+
+## Phase 3 — Complete
+
+- [x] #32 Phase 3.1 — MetadataAdapter protocol + OpenLibraryAdapter
+- [x] #33 Phase 3.2 — GET /metadata/search endpoint (JWT-protected)
+- [x] #34 Phase 3.3 — Display enriched metadata fields in BookDetail
+- [x] #35 Phase 3.4 — Search-and-select add-book flow
+- [x] #28 Phase 3.X — E2E smoke tests with Playwright
+- [x] PR #37 Phase 3 feature branch merged
+- [x] PR #41 fix: request isbn and page count fields explicitly from Open Library
+- [x] PR #42 fix: populate description from Open Library first_sentence (superseded by #43)
+- [x] PR #43 fix: fetch descriptions from Open Library Works API concurrently
+- [x] PR #44 fix: add --build to start.sh; cache npm deps and Playwright browsers in CI
 
 ---
 
@@ -43,6 +57,16 @@ Phases 1 and 2 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-15 — Phase 3 complete (PRs #37, #41, #43, #44)
+- `app/adapters/metadata.py`: `MetadataAdapter` ABC + `MetadataResult` dataclass.
+- `app/adapters/open_library.py`: `OpenLibraryAdapter` — searches Open Library, fetches descriptions concurrently from Works API via `ThreadPoolExecutor` (bounded latency), requests `isbn` and `number_of_pages_median` explicitly via `fields` param.
+- `app/routers/metadata.py`: `GET /metadata/search?q=` — JWT-protected, returns `list[BookSearchResult]`.
+- `frontend/src/pages/AddBook.jsx`: full rewrite — search-and-select flow with cover thumbnail results list, confirm/pre-fill form, manual fallback.
+- `frontend/src/pages/BookDetail.jsx`: surfaces description, page count, published year; `htmlFor`/`id` pairs added to all labels for Playwright compatibility.
+- `frontend/src/pages/Register.jsx`, `Login.jsx`: `htmlFor`/`id` pairs added.
+- `scripts/start.sh`: `docker compose up -d --build` ensures container rebuilds after `git pull`.
+- `.github/workflows/e2e.yml`: two Playwright smoke tests (add-book, book-detail); npm and Playwright browser caching added.
 
 ### 2026-05-15 — Codex review fixes (PR #30)
 - `frontend/src/pages/BookDetail.jsx`: "Remove from shelf" now calls `DELETE /books/{id}` instead of `DELETE /reading-logs/{id}`; cascade removes the log, eliminating the orphaned book record.
