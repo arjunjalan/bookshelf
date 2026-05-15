@@ -6,13 +6,14 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 1 — Core Data Model**
-A stable backend that can store books and reading records.
-Done when: an authenticated user can log a book and retrieve their reading history via the API.
+**Phase 2 — Frontend**
+A React + Vite + Tailwind frontend that lets a user log in, manage their book catalog, and view reading history.
+
+Phase 1 is complete and closed. All 8 stories shipped; 7/7 E2E tests passing.
 
 ---
 
-## Stories
+## Phase 1 — Complete
 
 - [x] #8 Scaffold FastAPI project and Docker Compose
 - [x] #9 SQLAlchemy models: users, books, reading_logs, tags
@@ -22,12 +23,26 @@ Done when: an authenticated user can log a book and retrieve their reading histo
 - [x] #13 CRUD endpoints: books
 - [x] #14 CRUD endpoints: reading records
 - [x] #15 End-to-end smoke test
-
-Work top to bottom — each story depends on the one above it.
+- [x] PR #16 Books made user-scoped (user_id FK, ownership enforced in all queries)
+- [x] PR #17 Codex review fixes (import ordering, lazy SECRET_KEY, book ownership on log create, composite ISBN uniqueness, multi-user tests)
 
 ---
 
 ## Session Notes
+
+### 2026-05-15 — Phase 1 closed; README and CONTEXT updated
+- README.md written as a public-facing project page: stack, structure, getting started, API overview, roadmap.
+- CONTEXT.md updated to reflect Phase 1 complete and Phase 2 as current phase.
+- Worktree practice now documented in CLAUDE.md and followed from this session forward.
+
+### 2026-05-15 — Codex review fixes (PR #17)
+- `app/main.py`: `load_dotenv()` moved before router imports.
+- `app/services/auth.py`: `SECRET_KEY` and token expiry read lazily at call time (no module-level `os.environ[]`).
+- `app/services/reading_logs.py`: `create_reading_log` now verifies `book.user_id == user_id` before inserting; returns `None` on mismatch → 404 in router.
+- `alembic/versions/0003_books_user_id.py`: added `DEV-ONLY` comment on data-clearing statements.
+- `alembic/versions/0004_books_isbn_composite_unique.py`: drops global `ix_books_isbn`; adds `uq_books_user_isbn (user_id, isbn) WHERE isbn IS NOT NULL`.
+- `app/models/book.py`: `__table_args__` composite index to match migration 0004.
+- `tests/test_e2e.py`: 3 new multi-user tests — duplicate ISBN, cross-user log creation blocked, cross-user book visibility blocked. 7/7 passing.
 
 ### 2026-05-15 — Architecture review: books become user-scoped
 - `app/models/book.py`: added `user_id` FK to `users` with `ondelete="CASCADE"` and index.
