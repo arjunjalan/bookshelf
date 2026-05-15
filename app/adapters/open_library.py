@@ -18,7 +18,7 @@ class OpenLibraryAdapter(MetadataAdapter):
                 response = client.get(_BASE_URL, params={
                     "q": query,
                     "limit": 10,
-                    "fields": "title,author_name,isbn,number_of_pages_median,cover_i,first_publish_year",
+                    "fields": "title,author_name,isbn,number_of_pages_median,cover_i,first_publish_year,first_sentence",
                 })
                 response.raise_for_status()
                 docs = response.json().get("docs", [])
@@ -36,6 +36,8 @@ class OpenLibraryAdapter(MetadataAdapter):
             isbns = doc.get("isbn") or []
             cover_id = doc.get("cover_i")
             year = doc.get("first_publish_year")
+            first_sentences = doc.get("first_sentence") or []
+            description = first_sentences[0] if first_sentences else None
 
             results.append(
                 MetadataResult(
@@ -43,7 +45,7 @@ class OpenLibraryAdapter(MetadataAdapter):
                     author=authors[0],
                     isbn=isbns[0] if isbns else None,
                     cover_url=_COVER_URL.format(cover_id=cover_id) if cover_id else None,
-                    description=None,
+                    description=description,
                     page_count=doc.get("number_of_pages_median"),
                     published_date=date(year, 1, 1) if year and 1 <= year <= 9999 else None,
                 )
