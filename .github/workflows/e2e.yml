@@ -14,6 +14,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bookshelf
       SECRET_KEY: ci-e2e-secret
       API_URL: http://localhost:8000
+      VITE_API_URL: http://localhost:8000
       PLAYWRIGHT_BASE_URL: http://localhost:5173
 
     steps:
@@ -55,8 +56,11 @@ jobs:
       - name: Start API
         run: uv run uvicorn app.main:app --port 8000 &
 
-      - name: Start frontend
-        run: npm run dev --prefix frontend &
+      - name: Build frontend
+        run: npm run build --prefix frontend
+
+      - name: Start frontend (preview)
+        run: cd frontend && npx vite preview --port 5173 &
 
       - name: Wait for servers
         run: |
