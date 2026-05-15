@@ -6,10 +6,24 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 2 — Frontend**
-A React + Vite + Tailwind frontend that lets a user log in, manage their book catalog, and view reading history.
+**Phase 3 — Book Metadata Enrichment**
+Open Library API integration via MetadataAdapter; search by title or author, auto-populate metadata, cover images.
 
-Phase 1 is complete and closed. All 8 stories shipped; 7/7 E2E tests passing.
+Phases 1 and 2 are complete and closed.
+
+---
+
+## Phase 2 — Complete
+
+- [x] #18 Phase 2.1 — Scaffold React frontend (Vite + Tailwind v3 + React Router v6 + TanStack Query v5 + Axios)
+- [x] #19 Phase 2.2 — Auth context and JWT token handling
+- [x] #20 Phase 2.3 — Register and Login pages
+- [x] #21 Phase 2.4 — App shell and navigation
+- [x] #22 Phase 2.5 — Reading list page
+- [x] #23 Phase 2.6 — Add book form
+- [x] #24 Phase 2.7 — Book detail page
+- [x] PR #27 Backend gaps for frontend (nested BookSummary in ReadingLogRead, DELETE /reading-logs/{id})
+- [x] PR #29 Phase 2 frontend merged to main; CORS middleware and SECRET_KEY dev default added
 
 ---
 
@@ -29,6 +43,17 @@ Phase 1 is complete and closed. All 8 stories shipped; 7/7 E2E tests passing.
 ---
 
 ## Session Notes
+
+### 2026-05-15 — Phase 2 complete (PR #29)
+- Full React frontend built and tested locally end-to-end.
+- `frontend/`: Vite + React + Tailwind v3 + React Router v6 + TanStack Query v5 + Axios.
+- `src/contexts/AuthContext.jsx`: JWT stored in localStorage as `bs_token`; axios interceptor attaches Bearer header.
+- `src/components/ProtectedRoute.jsx`: redirects unauthenticated users to `/login`.
+- `src/components/Layout.jsx`: responsive top nav with hamburger at `sm` breakpoint.
+- Pages: Login, Register, Books (tabs + skeleton + empty state), AddBook (two-step POST /books → POST /reading-logs), BookDetail (inline edit via PATCH, remove via DELETE).
+- Backend fixes landed alongside: CORS middleware in `app/main.py` (configurable via `CORS_ORIGINS` env var, defaults to `http://localhost:5173`); `SECRET_KEY` dev default in `docker-compose.yml`.
+- Issue #25 (Vercel deployment) deferred — will reopen for Phase 2.8 once a Render backend URL exists.
+- All 15 manual acceptance criteria passed before PR was opened.
 
 ### 2026-05-15 — Phase 1 closed; README and CONTEXT updated
 - README.md written as a public-facing project page: stack, structure, getting started, API overview, roadmap.

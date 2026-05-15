@@ -9,7 +9,8 @@ A personal book-logging and reading companion app. Log books, track your reading
 | API | FastAPI (Python 3.12) |
 | Database | PostgreSQL — SQLAlchemy 2.0 ORM, Alembic migrations |
 | Auth | JWT (bcrypt + python-jose, stateless) |
-| Package management | uv |
+| Frontend | React + Vite + Tailwind CSS v3 + TanStack Query v5 + Axios |
+| Package management | uv (backend) · npm (frontend) |
 | Containerisation | Docker Compose |
 | CI | GitHub Actions |
 | Hosting | Render (API) · Vercel (frontend) · Supabase (database) |
@@ -25,6 +26,14 @@ bookshelf/
 │   ├── models/         # SQLAlchemy ORM models
 │   ├── schemas/        # Pydantic request/response schemas
 │   └── main.py
+├── frontend/
+│   ├── src/
+│   │   ├── api/        # Axios client
+│   │   ├── contexts/   # AuthContext (JWT state)
+│   │   ├── components/ # Layout, ProtectedRoute, BookCard
+│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail
+│   ├── .env.example
+│   └── vite.config.js
 ├── alembic/            # Database migrations
 ├── tests/
 ├── docker-compose.yml
@@ -34,7 +43,9 @@ bookshelf/
 
 ## Getting Started
 
-**Prerequisites:** Docker, Docker Compose, [uv](https://docs.astral.sh/uv/)
+**Prerequisites:** Docker, Docker Compose, [uv](https://docs.astral.sh/uv/), Node.js 18+
+
+### Backend
 
 ```bash
 git clone https://github.com/arjunjalan/bookshelf.git
@@ -47,7 +58,18 @@ docker compose exec api sh -c 'alembic upgrade head'
 API: `http://localhost:8000`  
 Interactive docs: `http://localhost:8000/docs`
 
-**Run tests** (requires the containers to be up):
+### Frontend
+
+```bash
+cd frontend
+cp .env.example .env          # VITE_API_URL=http://localhost:8000
+npm install
+npm run dev
+```
+
+App: `http://localhost:5173`
+
+### Tests
 
 ```bash
 uv run pytest
@@ -70,6 +92,7 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 | `GET` | `/reading-logs` | List reading history (filterable by status) |
 | `GET` | `/reading-logs/{id}` | Get a reading record |
 | `PATCH` | `/reading-logs/{id}` | Update a reading record |
+| `DELETE` | `/reading-logs/{id}` | Remove a book from your shelf |
 | `GET` | `/health` | Health check |
 
 Reading status values: `reading`, `read`, `want_to_read`
@@ -77,7 +100,7 @@ Reading status values: `reading`, `read`, `want_to_read`
 ## Roadmap
 
 - [x] **Phase 1** — Core backend: auth, book catalog, reading logs, E2E tests
-- [ ] **Phase 2** — Frontend (React + Vite + Tailwind)
+- [x] **Phase 2** — Frontend (React + Vite + Tailwind)
 - [ ] **Phase 3** — Book metadata enrichment via Open Library API
 - [ ] **Phase 4** — Reading analytics
 - [ ] **Phase 5** — ML predictions and recommendations

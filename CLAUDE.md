@@ -39,6 +39,14 @@ bookshelf/
 │   ├── models/         # SQLAlchemy ORM models
 │   ├── schemas/        # Pydantic request/response schemas
 │   └── main.py         # FastAPI app entry point
+├── frontend/
+│   ├── src/
+│   │   ├── api/        # Axios client (src/api/client.js) — Bearer token interceptor
+│   │   ├── contexts/   # AuthContext — JWT state, login/logout/register
+│   │   ├── components/ # Layout, ProtectedRoute, BookCard
+│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, NotFound
+│   ├── .env.example    # VITE_API_URL
+│   └── vite.config.js  # /api proxy → localhost:8000 in dev
 ├── alembic/            # Migrations
 ├── tests/
 ├── docker-compose.yml
@@ -76,12 +84,20 @@ Do not strip these to simplify early phases. Historical records cannot be recons
 
 ## Conventions
 
+**Backend**
 - Pydantic schemas are separate from ORM models — never return a SQLAlchemy model directly from a route
 - Separate `Create`, `Read`, `Update` Pydantic schemas per entity
 - All data endpoints require authentication via `current_user` dependency
 - Users can only access their own data — enforce in DB queries, not just middleware
 - Python `logging` with structured output — no print statements
 - `pyproject.toml` for dependency management
+
+**Frontend**
+- All API calls go through `src/api/client.js` (Axios instance) — never import axios directly in pages
+- Auth state lives in `AuthContext` only — no other component manages tokens
+- Server state (API data) via TanStack Query; local UI state via `useState`
+- All authenticated routes wrapped in `ProtectedRoute`
+- `VITE_API_URL` env var controls the backend URL — never hardcode localhost in component code
 
 ---
 
@@ -106,13 +122,24 @@ This keeps the `main` working directory clean and makes it safe to work on multi
 
 ## Running Locally
 
+**Backend**
 ```bash
 cp .env.example .env   # fill in DATABASE_URL, SECRET_KEY
-docker compose up      # starts api + postgres
+docker compose up -d
+docker compose exec api sh -c 'alembic upgrade head'
 ```
 
-API: `http://localhost:8000`  
-Docs: `http://localhost:8000/docs`
+API: `http://localhost:8000` · Docs: `http://localhost:8000/docs`
+
+**Frontend**
+```bash
+cd frontend
+cp .env.example .env   # VITE_API_URL=http://localhost:8000
+npm install
+npm run dev
+```
+
+App: `http://localhost:5173`
 
 ---
 
