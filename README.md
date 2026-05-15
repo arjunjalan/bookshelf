@@ -31,7 +31,7 @@ bookshelf/
 │   │   ├── api/        # Axios client
 │   │   ├── contexts/   # AuthContext (JWT state)
 │   │   ├── components/ # Layout, ProtectedRoute, BookCard
-│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail
+│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, Stats
 │   ├── .env.example
 │   └── vite.config.js
 ├── alembic/            # Database migrations
@@ -86,6 +86,11 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 | `PATCH` | `/reading-logs/{id}` | Update a reading record |
 | `DELETE` | `/reading-logs/{id}` | Remove a book from your shelf |
 | `GET` | `/metadata/search?q=` | Search Open Library for book metadata |
+| `GET` | `/analytics/summary` | Summary stats (total books, avg rating, avg days, top genre) |
+| `GET` | `/analytics/books-over-time` | Books finished per calendar month |
+| `GET` | `/analytics/by-genre` | Books read per genre |
+| `GET` | `/analytics/by-author` | Books read per author |
+| `GET` | `/analytics/pace` | Days to finish per book |
 | `GET` | `/health` | Health check |
 
 Reading status values: `reading`, `read`, `want_to_read`
@@ -95,6 +100,6 @@ Reading status values: `reading`, `read`, `want_to_read`
 - [x] **Phase 1** — Core backend: auth, book catalog, reading logs, E2E tests
 - [x] **Phase 2** — Frontend (React + Vite + Tailwind)
 - [x] **Phase 3** — Book metadata enrichment via Open Library API
-- [ ] **Phase 4** — Reading analytics
+- [x] **Phase 4** — Reading analytics
 - [ ] **Phase 5** — ML predictions and recommendations
 - [ ] **Phase 6** — Natural language interface (OpenAI)

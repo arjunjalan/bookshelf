@@ -6,17 +6,18 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 4 — Reading Analytics**
+**Phase 5 — ML Predictions and Recommendations**
 
-Phases 1, 2, and 3 are complete and closed.
+Phases 1, 2, 3, and 4 are complete and closed.
 
 ---
 
-## Phase 4 — In Progress
+## Phase 4 — Complete
 
 - [x] #46 Phase 4.1 — Analytics data layer (merged PR #49)
 - [x] #47 Phase 4.2 — Analytics API endpoints (merged PR #49)
 - [x] #48 Phase 4.3 — Analytics dashboard frontend (merged PR #50)
+- [x] Epic #4 closed
 
 ---
 
@@ -65,6 +66,16 @@ Phases 1, 2, and 3 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-15 — Phase 4 complete (PRs #49, #50)
+- `alembic/versions/0005_analytics_views.py`: four PostgreSQL views (`v_books_per_month`, `v_reading_pace`, `v_genre_breakdown`, `v_author_breakdown`), each including `user_id` for per-user isolation. Fixed `EXTRACT(DAY FROM date_diff)` — `DATE - DATE` returns `INTEGER` in PostgreSQL, not `INTERVAL`; replaced with direct `::int` cast.
+- `app/services/analytics.py`: five module-level functions — ORM queries for summary stats (`func.avg` with explicit `float()` coercion to avoid `Decimal` Pydantic errors); `text()` + `.mappings()` for view-backed aggregate queries.
+- `app/schemas/analytics.py`: `SummaryStats`, `BooksOverTimeItem`, `GenreItem`, `AuthorItem`, `PaceItem` — plain Pydantic, no `from_attributes` (built from dicts, not ORM objects).
+- `app/routers/analytics.py`: five JWT-protected GET endpoints under `/analytics`.
+- `frontend/src/pages/Stats.jsx`: five parallel `useQuery` calls, summary stat cards, four Recharts `BarChart`s (vertical for books-over-time, horizontal for genre/author/pace), stone color palette, per-section empty states and loading skeletons.
+- `frontend/src/App.jsx`: `/stats` route added inside `ProtectedRoute > Layout`.
+- `frontend/src/components/Layout.jsx`: "Stats" nav link added to desktop and mobile nav.
+- Recharts (`^3.8.1`) added as frontend dependency; `npm install` must be run in `frontend/` after merging any PR that adds npm dependencies (now documented in CLAUDE.md).
 
 ### 2026-05-15 — Phase 3 complete (PRs #37, #41, #43, #44)
 - `app/adapters/metadata.py`: `MetadataAdapter` ABC + `MetadataResult` dataclass.

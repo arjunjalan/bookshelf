@@ -44,7 +44,7 @@ bookshelf/
 │   │   ├── api/        # Axios client (src/api/client.js) — Bearer token interceptor
 │   │   ├── contexts/   # AuthContext — JWT state, login/logout/register
 │   │   ├── components/ # Layout, ProtectedRoute, BookCard
-│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, NotFound
+│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, Stats, NotFound
 │   ├── .env.example    # VITE_API_URL
 │   └── vite.config.js  # /api proxy → localhost:8000 in dev
 ├── alembic/            # Migrations

@@ -44,7 +44,7 @@ bookshelf/
 │   │   ├── api/        # Axios client (src/api/client.js) — Bearer token interceptor
 │   │   ├── contexts/   # AuthContext — JWT state, login/logout/register
 │   │   ├── components/ # Layout, ProtectedRoute, BookCard
-│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, NotFound
+│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, Stats, NotFound
 │   ├── .env.example    # VITE_API_URL
 │   └── vite.config.js  # /api proxy → localhost:8000 in dev
 ├── alembic/            # Migrations
@@ -123,6 +123,8 @@ This keeps the `main` working directory clean and makes it safe to work on multi
 - **Worktree + PR** — any application code, workflow changes, migrations, or multi-file changes with interdependencies. Needs CI and a review trail.
 
 **When a PR merges, close the corresponding GitHub issue(s) immediately** — comment with the PR number so the close is traceable. Close story issues individually and the parent epic once all stories are done.
+
+**After merging a PR that adds frontend npm dependencies, run `npm install` in `frontend/` on main** — worktrees install into their own `node_modules` and the main repo's `node_modules` is not updated automatically on merge.
 
 ---
 
