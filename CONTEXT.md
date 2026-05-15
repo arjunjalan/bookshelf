@@ -14,13 +14,9 @@ Phases 1, 2, and 3 are complete and closed.
 
 ## Phase 4 — In Progress
 
-- [ ] #46 Phase 4.1 — Analytics data layer (PR #49 open)
-- [ ] #47 Phase 4.2 — Analytics API endpoints (PR #49 open)
-- [ ] #48 Phase 4.3 — Analytics dashboard frontend (PR #50 open)
-
-PRs:
-- PR #49 — `phase4-analytics-api`: migration 0005 (4 views), services/analytics.py, schemas/analytics.py, routers/analytics.py, main.py update
-- PR #50 — `phase4-analytics-frontend`: recharts install, Stats.jsx, App.jsx route, Layout.jsx nav links
+- [x] #46 Phase 4.1 — Analytics data layer (merged PR #49)
+- [x] #47 Phase 4.2 — Analytics API endpoints (merged PR #49)
+- [ ] #48 Phase 4.3 — Analytics dashboard frontend (PR #50 in review)
 
 ---
 
