@@ -21,7 +21,7 @@ fi
 
 # ── Docker services ───────────────────────────────────────────────────────────
 echo "Starting Docker services..."
-docker compose -f "$ROOT/docker-compose.yml" up -d
+docker compose -f "$ROOT/docker-compose.yml" up -d --build
 
 echo "Running migrations..."
 (cd "$ROOT" && uv run alembic upgrade head)
