@@ -31,6 +31,12 @@ export default function Layout() {
               >
                 Add book
               </Link>
+              <Link
+                to="/stats"
+                className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
+              >
+                Stats
+              </Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
@@ -65,6 +71,13 @@ export default function Layout() {
                 onClick={() => setMenuOpen(false)}
               >
                 Add book
+              </Link>
+              <Link
+                to="/stats"
+                className="text-sm text-stone-600"
+                onClick={() => setMenuOpen(false)}
+              >
+                Stats
               </Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
