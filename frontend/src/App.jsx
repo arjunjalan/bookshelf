@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Books from './pages/Books'
 import AddBook from './pages/AddBook'
 import BookDetail from './pages/BookDetail'
+import Stats from './pages/Stats'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/books" element={<Books />} />
           <Route path="/books/add" element={<AddBook />} />
           <Route path="/books/:id" element={<BookDetail />} />
+          <Route path="/stats" element={<Stats />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
