@@ -4,6 +4,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from app.models.book import Book
 from app.models.reading_log import ReadingLog, ReadingStatus
 from app.schemas.reading_log import ReadingLogCreate, ReadingLogUpdate
 
@@ -18,7 +19,9 @@ def create_reading_log(
     db: Session,
     user_id: uuid.UUID,
     body: ReadingLogCreate,
-) -> ReadingLog:
+) -> Optional[ReadingLog]:
+    if not db.query(Book).filter(Book.id == body.book_id, Book.user_id == user_id).first():
+        return None
     log = ReadingLog(
         user_id=user_id,
         pace_days=compute_pace(body.start_date, body.end_date),
