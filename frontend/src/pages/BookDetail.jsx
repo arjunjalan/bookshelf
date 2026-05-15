@@ -240,8 +240,9 @@ export default function BookDetail() {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-stone-600">Status</label>
+                <label htmlFor="edit-status" className="text-xs font-medium text-stone-600">Status</label>
                 <select
+                  id="edit-status"
                   value={draft.status}
                   onChange={(e) => setDraftField('status')(e.target.value)}
                   className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 bg-white"
@@ -282,8 +283,9 @@ export default function BookDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-stone-600">Notes</label>
+                <label htmlFor="edit-notes" className="text-xs font-medium text-stone-600">Notes</label>
                 <textarea
+                  id="edit-notes"
                   value={draft.notes}
                   onChange={(e) => setDraftField('notes')(e.target.value)}
                   rows={4}

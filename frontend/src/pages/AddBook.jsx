@@ -38,10 +38,11 @@ function LogSection({ form, setForm }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-stone-700">
+        <label htmlFor="log-status" className="text-sm font-medium text-stone-700">
           Status <span className="text-red-400">*</span>
         </label>
         <select
+          id="log-status"
           required
           value={form.status}
           onChange={set('status')}
@@ -110,8 +111,9 @@ function LogSection({ form, setForm }) {
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-stone-700">Notes</label>
+        <label htmlFor="log-notes" className="text-sm font-medium text-stone-700">Notes</label>
         <textarea
+          id="log-notes"
           value={form.notes}
           onChange={set('notes')}
           rows={3}
@@ -256,9 +258,10 @@ export default function AddBook() {
             className="bg-white rounded-xl border border-stone-200 p-6 flex flex-col gap-4"
           >
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-stone-700">Search for a book</label>
+              <label htmlFor="book-search" className="text-sm font-medium text-stone-700">Search for a book</label>
               <div className="flex gap-2">
                 <input
+                  id="book-search"
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -357,10 +360,11 @@ export default function AddBook() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-stone-700">
+              <label htmlFor="book-title" className="text-sm font-medium text-stone-700">
                 Title <span className="text-red-400">*</span>
               </label>
               <input
+                id="book-title"
                 type="text"
                 required
                 value={bookForm.title}
@@ -370,10 +374,11 @@ export default function AddBook() {
             </div>
 
             <div className="col-span-2 flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-stone-700">
+              <label htmlFor="book-author" className="text-sm font-medium text-stone-700">
                 Author <span className="text-red-400">*</span>
               </label>
               <input
+                id="book-author"
                 type="text"
                 required
                 value={bookForm.author}
