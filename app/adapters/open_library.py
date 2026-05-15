@@ -15,7 +15,11 @@ class OpenLibraryAdapter(MetadataAdapter):
     def search(self, query: str) -> list[MetadataResult]:
         try:
             with httpx.Client(timeout=5.0) as client:
-                response = client.get(_BASE_URL, params={"q": query, "limit": 10})
+                response = client.get(_BASE_URL, params={
+                    "q": query,
+                    "limit": 10,
+                    "fields": "title,author_name,isbn,number_of_pages_median,cover_i,first_publish_year",
+                })
                 response.raise_for_status()
                 docs = response.json().get("docs", [])
         except Exception:
