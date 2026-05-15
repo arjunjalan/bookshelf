@@ -44,6 +44,12 @@ Phases 1 and 2 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-15 — Codex review fixes (PR #30)
+- `frontend/src/pages/BookDetail.jsx`: "Remove from shelf" now calls `DELETE /books/{id}` instead of `DELETE /reading-logs/{id}`; cascade removes the log, eliminating the orphaned book record.
+- `app/routers/books.py`: `IntegrityError` caught in `create_book` and `update_book`; returns 409 instead of 500 on duplicate `(user_id, isbn)`.
+- `frontend/src/api/client.js`: response interceptor added — any 401 clears `bs_token`/`bs_user` from localStorage and hard-redirects to `/login`.
+- `AGENTS.md` synced with `CLAUDE.md` (Phase 2 additions); `REVIEW.md` updated with findings #1–3 struck through. Findings #4 and #5 deferred.
+
 ### 2026-05-15 — Phase 2 complete (PR #29)
 - Full React frontend built and tested locally end-to-end.
 - `frontend/`: Vite + React + Tailwind v3 + React Router v6 + TanStack Query v5 + Axios.
