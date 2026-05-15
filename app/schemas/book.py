@@ -32,6 +32,16 @@ class BookRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class BookSearchResult(BaseModel):
+    title: str
+    author: str
+    isbn: Optional[str] = None
+    cover_url: Optional[str] = None
+    description: Optional[str] = None
+    page_count: Optional[int] = None
+    published_date: Optional[date] = None
+
+
 class BookUpdate(BaseModel):
     title: Optional[str] = None
     author: Optional[str] = None
