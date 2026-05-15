@@ -68,3 +68,17 @@ def update_reading_log(
 
     log = reading_log_service.update_reading_log(db, log, body)
     return ReadingLogRead.model_validate(log)
+
+
+@router.delete("/{log_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_reading_log(
+    log_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    log = reading_log_service.get_reading_log(db, current_user.id, log_id)
+    if log is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reading log not found")
+    db.delete(log)
+    db.commit()
+    logger.info("Deleted reading log %s for user %s", log_id, current_user.id)
