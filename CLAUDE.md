@@ -118,6 +118,10 @@ Do not strip these to simplify early phases. Historical records cannot be recons
 
 This keeps the `main` working directory clean and makes it safe to work on multiple things in parallel.
 
+**Use judgment on when a worktree + PR is necessary versus a direct commit to main:**
+- **Direct to main** — single-file config changes, `.gitignore` entries, doc/comment fixes, typo corrections. No logic, no risk, no need for CI.
+- **Worktree + PR** — any application code, workflow changes, migrations, or multi-file changes with interdependencies. Needs CI and a review trail.
+
 **When a PR merges, close the corresponding GitHub issue(s) immediately** — comment with the PR number so the close is traceable. Close story issues individually and the parent epic once all stories are done.
 
 ---
