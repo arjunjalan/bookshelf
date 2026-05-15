@@ -8,7 +8,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/bookshelf
-      SECRET_KEY: ${SECRET_KEY}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
 
   postgres:
     image: postgres:16-alpine
