@@ -24,7 +24,7 @@ echo "Starting Docker services..."
 docker compose -f "$ROOT/docker-compose.yml" up -d
 
 echo "Running migrations..."
-docker compose -f "$ROOT/docker-compose.yml" exec -T api sh -c 'alembic upgrade head'
+(cd "$ROOT" && uv run alembic upgrade head)
 
 # ── Frontend dev server ───────────────────────────────────────────────────────
 echo "Starting frontend..."
