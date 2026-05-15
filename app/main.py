@@ -10,7 +10,7 @@ from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
-from app.routers import auth, books, metadata, reading_logs  # noqa: E402
+from app.routers import analytics, auth, books, metadata, reading_logs  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,6 +44,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(analytics.router)
 app.include_router(books.router)
 app.include_router(reading_logs.router)
 app.include_router(metadata.router)
