@@ -56,7 +56,10 @@ export default function BookDetail() {
   const log = logs?.find((l) => l.book_id === id)
 
   const updateMutation = useMutation({
-    mutationFn: (payload) => client.patch(`/reading-logs/${log.id}`, payload).then((r) => r.data),
+    mutationFn: (payload) => {
+      if (!log) throw new Error('No reading log')
+      return client.patch(`/reading-logs/${log.id}`, payload).then((r) => r.data)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reading-logs'] })
       setEditing(false)
@@ -154,6 +157,13 @@ export default function BookDetail() {
           <p className="text-stone-500 text-sm">{book.author}</p>
           {book.genre && <p className="text-xs text-stone-400">{book.genre}</p>}
           {book.isbn && <p className="text-xs text-stone-400">ISBN: {book.isbn}</p>}
+          {(book.page_count || book.published_date) && (
+            <p className="text-xs text-stone-400">
+              {book.page_count && `${book.page_count} pages`}
+              {book.page_count && book.published_date && ' · '}
+              {book.published_date && `Published ${new Date(book.published_date).getUTCFullYear()}`}
+            </p>
+          )}
           {log && !editing && (
             <span
               className={`text-xs px-2 py-0.5 rounded-full font-medium w-fit mt-1 ${STATUS_COLOR[log.status]}`}
@@ -163,6 +173,10 @@ export default function BookDetail() {
           )}
         </div>
       </div>
+
+      {book.description && (
+        <p className="mt-4 text-sm text-stone-600 whitespace-pre-wrap">{book.description}</p>
+      )}
 
       {log && (
         <div className="mt-6 bg-white rounded-xl border border-stone-200 p-5 flex flex-col gap-4">
@@ -226,8 +240,9 @@ export default function BookDetail() {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-stone-600">Status</label>
+                <label htmlFor="edit-status" className="text-xs font-medium text-stone-600">Status</label>
                 <select
+                  id="edit-status"
                   value={draft.status}
                   onChange={(e) => setDraftField('status')(e.target.value)}
                   className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 bg-white"
@@ -268,8 +283,9 @@ export default function BookDetail() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-stone-600">Notes</label>
+                <label htmlFor="edit-notes" className="text-xs font-medium text-stone-600">Notes</label>
                 <textarea
+                  id="edit-notes"
                   value={draft.notes}
                   onChange={(e) => setDraftField('notes')(e.target.value)}
                   rows={4}

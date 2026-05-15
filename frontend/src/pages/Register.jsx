@@ -44,8 +44,9 @@ export default function Register() {
             </p>
           )}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-stone-700">Email</label>
+            <label htmlFor="email" className="text-sm font-medium text-stone-700">Email</label>
             <input
+              id="email"
               type="email"
               required
               value={email}
@@ -54,8 +55,9 @@ export default function Register() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-stone-700">Password</label>
+            <label htmlFor="password" className="text-sm font-medium text-stone-700">Password</label>
             <input
+              id="password"
               type="password"
               required
               minLength={8}
