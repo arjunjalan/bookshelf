@@ -80,7 +80,7 @@ test.describe('Add book', () => {
     await expect(page.getByText('Published 1965')).toBeVisible()
 
     await page.goto('/books')
-    await page.getByRole('button', { name: 'Read' }).click()
+    await page.getByRole('button', { name: 'Read', exact: true }).click()
     await expect(page.getByText('Dune')).toBeVisible()
   })
 })
