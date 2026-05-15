@@ -118,6 +118,8 @@ Do not strip these to simplify early phases. Historical records cannot be recons
 
 This keeps the `main` working directory clean and makes it safe to work on multiple things in parallel.
 
+**When a PR merges, close the corresponding GitHub issue(s) immediately** — comment with the PR number so the close is traceable. Close story issues individually and the parent epic once all stories are done.
+
 ---
 
 ## Running Locally
