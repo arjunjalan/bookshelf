@@ -17,10 +17,10 @@ router = APIRouter(prefix="/books", tags=["books"])
 @router.post("", response_model=BookRead, status_code=status.HTTP_201_CREATED)
 def create_book(
     body: BookCreate,
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    book = Book(**body.model_dump())
+    book = Book(**body.model_dump(), user_id=current_user.id)
     db.add(book)
     db.commit()
     db.refresh(book)
@@ -32,20 +32,27 @@ def create_book(
 def list_books(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    books = db.query(Book).order_by(Book.created_at.desc()).offset(skip).limit(limit).all()
+    books = (
+        db.query(Book)
+        .filter(Book.user_id == current_user.id)
+        .order_by(Book.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return [BookRead.model_validate(book) for book in books]
 
 
 @router.get("/{book_id}", response_model=BookRead)
 def get_book(
     book_id: uuid.UUID,
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    book = db.get(Book, book_id)
+    book = db.query(Book).filter(Book.id == book_id, Book.user_id == current_user.id).first()
     if book is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
     return BookRead.model_validate(book)
@@ -55,10 +62,10 @@ def get_book(
 def update_book(
     book_id: uuid.UUID,
     body: BookUpdate,
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    book = db.get(Book, book_id)
+    book = db.query(Book).filter(Book.id == book_id, Book.user_id == current_user.id).first()
     if book is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
     for field, value in body.model_dump(exclude_unset=True).items():
@@ -71,10 +78,10 @@ def update_book(
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_book(
     book_id: uuid.UUID,
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    book = db.get(Book, book_id)
+    book = db.query(Book).filter(Book.id == book_id, Book.user_id == current_user.id).first()
     if book is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
     db.delete(book)
