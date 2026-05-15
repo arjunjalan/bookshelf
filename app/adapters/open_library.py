@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 import httpx
@@ -7,18 +8,38 @@ from app.adapters.metadata import MetadataAdapter, MetadataResult
 
 logger = logging.getLogger(__name__)
 
-_BASE_URL = "https://openlibrary.org/search.json"
+_SEARCH_URL = "https://openlibrary.org/search.json"
+_WORKS_URL = "https://openlibrary.org{key}.json"
 _COVER_URL = "https://covers.openlibrary.org/b/id/{cover_id}-L.jpg"
+
+_SEARCH_FIELDS = (
+    "title,author_name,key,isbn,number_of_pages_median,cover_i,first_publish_year"
+)
+
+
+def _fetch_description(key: str) -> str | None:
+    try:
+        with httpx.Client(timeout=3.0) as client:
+            resp = client.get(_WORKS_URL.format(key=key))
+            resp.raise_for_status()
+            desc = resp.json().get("description")
+            if isinstance(desc, str):
+                return desc
+            if isinstance(desc, dict):
+                return desc.get("value")
+    except Exception:
+        logger.debug("Failed to fetch description for %s", key, exc_info=True)
+    return None
 
 
 class OpenLibraryAdapter(MetadataAdapter):
     def search(self, query: str) -> list[MetadataResult]:
         try:
             with httpx.Client(timeout=5.0) as client:
-                response = client.get(_BASE_URL, params={
+                response = client.get(_SEARCH_URL, params={
                     "q": query,
                     "limit": 10,
-                    "fields": "title,author_name,isbn,number_of_pages_median,cover_i,first_publish_year,first_sentence",
+                    "fields": _SEARCH_FIELDS,
                 })
                 response.raise_for_status()
                 docs = response.json().get("docs", [])
@@ -26,23 +47,28 @@ class OpenLibraryAdapter(MetadataAdapter):
             logger.warning("Open Library search failed for query %r", query, exc_info=True)
             return []
 
-        results = []
-        for doc in docs:
-            title = doc.get("title")
-            authors = doc.get("author_name") or []
-            if not title or not authors:
-                continue
+        valid_docs = [
+            doc for doc in docs
+            if doc.get("title") and doc.get("author_name")
+        ]
 
+        keys = [doc.get("key") for doc in valid_docs]
+        with ThreadPoolExecutor(max_workers=min(len(keys), 10)) as executor:
+            descriptions = list(executor.map(
+                lambda k: _fetch_description(k) if k else None,
+                keys,
+            ))
+
+        results = []
+        for doc, description in zip(valid_docs, descriptions):
             isbns = doc.get("isbn") or []
             cover_id = doc.get("cover_i")
             year = doc.get("first_publish_year")
-            first_sentences = doc.get("first_sentence") or []
-            description = first_sentences[0] if first_sentences else None
 
             results.append(
                 MetadataResult(
-                    title=title,
-                    author=authors[0],
+                    title=doc["title"],
+                    author=doc["author_name"][0],
                     isbn=isbns[0] if isbns else None,
                     cover_url=_COVER_URL.format(cover_id=cover_id) if cover_id else None,
                     description=description,
