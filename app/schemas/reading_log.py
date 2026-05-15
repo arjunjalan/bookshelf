@@ -7,6 +7,15 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.models.reading_log import ReadingStatus
 
 
+class BookSummary(BaseModel):
+    id: uuid.UUID
+    title: str
+    author: str
+    cover_url: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ReadingLogCreate(BaseModel):
     book_id: uuid.UUID
     status: ReadingStatus
@@ -21,6 +30,7 @@ class ReadingLogRead(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
     book_id: uuid.UUID
+    book: BookSummary
     status: ReadingStatus
     start_date: Optional[date]
     end_date: Optional[date]

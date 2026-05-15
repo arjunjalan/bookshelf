@@ -2,7 +2,7 @@ import uuid
 from datetime import date
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.book import Book
 from app.models.reading_log import ReadingLog, ReadingStatus
@@ -13,6 +13,10 @@ def compute_pace(start_date: Optional[date], end_date: Optional[date]) -> Option
     if start_date and end_date:
         return (end_date - start_date).days
     return None
+
+
+def _with_book(q):
+    return q.options(joinedload(ReadingLog.book))
 
 
 def create_reading_log(
@@ -30,6 +34,7 @@ def create_reading_log(
     db.add(log)
     db.commit()
     db.refresh(log)
+    db.refresh(log, attribute_names=["book"])
     return log
 
 
@@ -40,7 +45,7 @@ def list_reading_logs(
     skip: int,
     limit: int,
 ) -> list[ReadingLog]:
-    q = db.query(ReadingLog).filter(ReadingLog.user_id == user_id)
+    q = _with_book(db.query(ReadingLog).filter(ReadingLog.user_id == user_id))
     if status_filter is not None:
         q = q.filter(ReadingLog.status == status_filter)
     return q.order_by(ReadingLog.created_at.desc()).offset(skip).limit(limit).all()
@@ -52,7 +57,7 @@ def get_reading_log(
     log_id: uuid.UUID,
 ) -> Optional[ReadingLog]:
     return (
-        db.query(ReadingLog)
+        _with_book(db.query(ReadingLog))
         .filter(ReadingLog.id == log_id, ReadingLog.user_id == user_id)
         .first()
     )
