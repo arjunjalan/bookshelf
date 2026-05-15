@@ -58,6 +58,12 @@ docker compose exec api sh -c 'alembic upgrade head'
 API: `http://localhost:8000`  
 Interactive docs: `http://localhost:8000/docs`
 
+To stop and remove the containers:
+
+```bash
+docker compose down
+```
+
 ### Frontend
 
 ```bash
