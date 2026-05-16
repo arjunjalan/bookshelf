@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import ReactMarkdown from 'react-markdown'
 import client from '../api/client'
 
 export default function Chat() {
@@ -74,15 +75,15 @@ export default function Chat() {
 
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <p
-              className={`px-4 py-2 rounded-xl text-sm max-w-[80%] whitespace-pre-wrap leading-relaxed ${
-                m.role === 'user'
-                  ? 'bg-stone-900 text-white rounded-br-sm'
-                  : 'bg-stone-100 text-stone-900 rounded-bl-sm'
-              }`}
-            >
-              {m.content}
-            </p>
+            {m.role === 'user' ? (
+              <p className="px-4 py-2 rounded-xl rounded-br-sm text-sm max-w-[80%] whitespace-pre-wrap leading-relaxed bg-stone-900 text-white">
+                {m.content}
+              </p>
+            ) : (
+              <div className="px-4 py-2 rounded-xl rounded-bl-sm text-sm max-w-[80%] bg-stone-100 text-stone-900 prose prose-sm prose-stone max-w-none">
+                <ReactMarkdown>{m.content}</ReactMarkdown>
+              </div>
+            )}
           </div>
         ))}
 
