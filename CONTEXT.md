@@ -15,6 +15,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ## Phase 7 — In Progress
 
 - [x] #74 Phase 7.3 — Typeahead book search (merged PR #77)
+- [x] #78 Typeahead UX improvements — lite mode + full results list (merged PR #79)
 - [ ] #72 Phase 7.1 — Bulk CSV book import
 - [ ] #73 Phase 7.2 — Chat history persistence
 - [ ] #75 Phase 7.4 — Frontend redesign
@@ -95,6 +96,11 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Typeahead UX improvements (PR #79, closes #78)
+- `GET /metadata/search` gains `?lite=bool` and `?limit=int` (max 30) params.
+- `OpenLibraryAdapter.search()` skips Works API description fan-out when `lite=True` — 2–4× faster typeahead responses.
+- Frontend: typeahead uses `?lite=true`; Search button fires a separate full query (`?limit=25`) and renders a scrollable results list below the card with result count header. Typing again clears the full list and resumes typeahead.
 
 ### 2026-05-16 — Phase 7.3 — Typeahead book search (PR #77, closes #74)
 - `frontend/src/hooks/useDebounce.js`: new 8-line hook, `useEffect` + `setTimeout`, no new npm deps.
