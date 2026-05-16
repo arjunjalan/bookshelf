@@ -5,6 +5,8 @@ from collections.abc import Generator
 from sqlalchemy.orm import Session
 
 from app.adapters.llm import LLMAdapter
+from app.models.book import Book
+from app.models.reading_log import ReadingLog, ReadingStatus
 from app.services import reader_profile as reader_profile_service
 
 logger = logging.getLogger(__name__)
@@ -21,11 +23,42 @@ Here is the user's reading history and preferences:
 Top genres: {genres}
 Top authors: {authors}
 Rating distribution: {ratings}
-Average reading pace by genre: {pace}\
+Average reading pace by genre: {pace}
+
+Books on the user's shelf:
+{books}\
 """
 
 
-def _format_profile(profile: dict) -> str:
+def _format_books(db: Session, user_id: uuid.UUID) -> str:
+    rows = (
+        db.query(ReadingLog, Book)
+        .join(Book, ReadingLog.book_id == Book.id)
+        .filter(ReadingLog.user_id == user_id)
+        .order_by(ReadingLog.end_date.desc().nullslast())
+        .all()
+    )
+    if not rows:
+        return "none recorded"
+
+    lines = []
+    for log, book in rows:
+        status_label = {
+            ReadingStatus.READ: "read",
+            ReadingStatus.READING: "currently reading",
+            ReadingStatus.WANT_TO_READ: "want to read",
+        }[log.status]
+        parts = [f"- {book.title} by {book.author} ({status_label}"]
+        if log.end_date:
+            parts[0] += f", finished {log.end_date.strftime('%Y-%m-%d')}"
+        if log.rating:
+            parts[0] += f", rated {log.rating}/5"
+        parts[0] += ")"
+        lines.append(parts[0])
+    return "\n".join(lines)
+
+
+def _format_profile(profile: dict, books_text: str) -> str:
     genres = ", ".join(
         "{} ({} books{})".format(
             g["genre"],
@@ -51,7 +84,7 @@ def _format_profile(profile: dict) -> str:
         if p["avg_days"]
     ) or "no pace data"
 
-    return _SYSTEM_PROMPT.format(genres=genres, authors=authors, ratings=ratings, pace=pace)
+    return _SYSTEM_PROMPT.format(genres=genres, authors=authors, ratings=ratings, pace=pace, books=books_text)
 
 
 def build_messages(
@@ -61,7 +94,8 @@ def build_messages(
     history: list[dict],
 ) -> list[dict]:
     profile = reader_profile_service.get_reader_profile(db, user_id)
-    system_content = _format_profile(profile)
+    books_text = _format_books(db, user_id)
+    system_content = _format_profile(profile, books_text)
     messages: list[dict] = [{"role": "system", "content": system_content}]
     messages.extend(history)
     messages.append({"role": "user", "content": message})
