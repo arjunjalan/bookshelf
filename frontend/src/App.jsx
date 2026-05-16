@@ -8,6 +8,7 @@ import AddBook from './pages/AddBook'
 import BookDetail from './pages/BookDetail'
 import Stats from './pages/Stats'
 import Chat from './pages/Chat'
+import ImportCSV from './pages/ImportCSV'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/books/:id" element={<BookDetail />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/import" element={<ImportCSV />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
