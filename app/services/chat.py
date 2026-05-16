@@ -34,7 +34,7 @@ def _format_books(db: Session, user_id: uuid.UUID) -> str:
     rows = (
         db.query(ReadingLog, Book)
         .join(Book, ReadingLog.book_id == Book.id)
-        .filter(ReadingLog.user_id == user_id)
+        .filter(ReadingLog.user_id == user_id, ReadingLog.status == ReadingStatus.READ)
         .order_by(ReadingLog.end_date.desc().nullslast())
         .all()
     )
