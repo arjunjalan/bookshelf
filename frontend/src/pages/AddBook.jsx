@@ -169,13 +169,11 @@ export default function AddBook() {
 
   // search state
   const [query, setQuery] = useState('')
-  const [committedQuery, setCommittedQuery] = useState('')
+  const [fullSearchQuery, setFullSearchQuery] = useState('')
   const [dropdownDismissed, setDropdownDismissed] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
   const debouncedQuery = useDebounce(query, 300)
-  // committedQuery is set immediately when Search is clicked, bypassing debounce
-  const effectiveQuery = committedQuery || debouncedQuery
 
   const inputRef = useRef(null)
   const dropdownRef = useRef(null)
@@ -188,11 +186,22 @@ export default function AddBook() {
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // typeahead: lite=true skips description fetching for fast results
   const { data: searchResults = [], isFetching: searchLoading, isError: searchFailed } = useQuery({
-    queryKey: ['metadata-search', effectiveQuery],
+    queryKey: ['metadata-search', debouncedQuery],
     queryFn: () =>
-      client.get('/metadata/search', { params: { q: effectiveQuery } }).then((r) => r.data),
-    enabled: effectiveQuery.trim().length >= 2,
+      client.get('/metadata/search', { params: { q: debouncedQuery, lite: true } }).then((r) => r.data),
+    enabled: debouncedQuery.trim().length >= 2,
+    staleTime: 30_000,
+    retry: false,
+  })
+
+  // full search: triggered by Search button, fetches descriptions + up to 25 results
+  const { data: fullResults = [], isFetching: fullLoading, isError: fullFailed } = useQuery({
+    queryKey: ['metadata-full-search', fullSearchQuery],
+    queryFn: () =>
+      client.get('/metadata/search', { params: { q: fullSearchQuery, limit: 25 } }).then((r) => r.data),
+    enabled: fullSearchQuery.trim().length >= 2,
     staleTime: 30_000,
     retry: false,
   })
@@ -215,26 +224,25 @@ export default function AddBook() {
   }, [activeIndex])
 
   const visibleResults = searchResults.slice(0, 10)
+  const showFullResults = fullSearchQuery.trim().length >= 2
 
   function handleSearch(e) {
     e.preventDefault()
     if (!query.trim()) return
-    // bypass debounce — trigger immediately
-    setCommittedQuery(query.trim())
-    setDropdownDismissed(false)
+    setFullSearchQuery(query.trim())
+    setDropdownDismissed(true)
     setActiveIndex(-1)
   }
 
   function handleInputChange(e) {
     setQuery(e.target.value)
-    // clear committed so debounce takes over; re-open dropdown on new input
-    setCommittedQuery('')
+    setFullSearchQuery('')
     setDropdownDismissed(false)
     setActiveIndex(-1)
   }
 
   function handleKeyDown(e) {
-    if (dropdownDismissed || effectiveQuery.trim().length < 2) return
+    if (dropdownDismissed || debouncedQuery.trim().length < 2) return
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setActiveIndex((i) => Math.min(i + 1, visibleResults.length - 1))
@@ -263,6 +271,7 @@ export default function AddBook() {
       published_date: result.published_date ?? '',
     })
     setDropdownDismissed(true)
+    setFullSearchQuery('')
     setActiveIndex(-1)
     setSubmitError('')
     setMode('confirm')
@@ -272,6 +281,7 @@ export default function AddBook() {
     setBookForm(EMPTY_MANUAL)
     setSubmitError('')
     setDropdownDismissed(true)
+    setFullSearchQuery('')
     setMode('manual')
   }
 
@@ -335,8 +345,7 @@ export default function AddBook() {
   const inputCls =
     'border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300'
 
-  // gate on both raw query (instant) and effectiveQuery (debounced) to avoid ghost dropdown on clear
-  const dropdownVisible = !dropdownDismissed && query.trim().length >= 2 && effectiveQuery.trim().length >= 2
+  const dropdownVisible = !dropdownDismissed && !showFullResults && query.trim().length >= 2 && debouncedQuery.trim().length >= 2
 
   return (
     <div className="max-w-lg">
@@ -379,10 +388,10 @@ export default function AddBook() {
                   />
                   <button
                     type="submit"
-                    disabled={searchLoading || !query.trim()}
+                    disabled={fullLoading || !query.trim()}
                     className="bg-stone-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
                   >
-                    {searchLoading ? 'Searching…' : 'Search'}
+                    {fullLoading ? 'Searching…' : 'Search'}
                   </button>
                 </div>
 
@@ -461,6 +470,59 @@ export default function AddBook() {
               Add manually instead
             </button>
           </form>
+
+          {/* ── Full results list (shown after Search button click) ── */}
+          {showFullResults && (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs text-stone-400 px-1">
+                {fullLoading
+                  ? `Searching for "${fullSearchQuery}"…`
+                  : fullFailed
+                  ? 'Search failed.'
+                  : `${fullResults.length} result${fullResults.length !== 1 ? 's' : ''} for "${fullSearchQuery}"`}
+              </p>
+
+              {fullLoading && (
+                <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <li key={n} className="flex items-center gap-3 px-4 py-3 animate-pulse">
+                      <div className="w-9 h-12 bg-stone-100 rounded flex-shrink-0" />
+                      <div className="flex flex-col gap-2 flex-1">
+                        <div className="h-3 bg-stone-100 rounded w-3/4" />
+                        <div className="h-3 bg-stone-100 rounded w-1/2" />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {!fullLoading && fullFailed && (
+                <p className="text-sm text-stone-500 px-1">
+                  Search failed.{' '}
+                  <button onClick={goManual} className="underline hover:text-stone-700">
+                    Add manually
+                  </button>
+                </p>
+              )}
+
+              {!fullLoading && !fullFailed && fullResults.length === 0 && (
+                <p className="text-sm text-stone-500 px-1">
+                  No results found.{' '}
+                  <button onClick={goManual} className="underline hover:text-stone-700">
+                    Add manually
+                  </button>
+                </p>
+              )}
+
+              {!fullLoading && !fullFailed && fullResults.length > 0 && (
+                <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden overflow-y-auto" style={{ maxHeight: '30rem' }}>
+                  {fullResults.map((r, i) => (
+                    <SearchResult key={i} result={r} isActive={false} onSelect={selectResult} innerRef={null} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       )}
 

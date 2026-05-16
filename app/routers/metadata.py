@@ -14,12 +14,14 @@ router = APIRouter(prefix="/metadata", tags=["metadata"])
 @router.get("/search", response_model=list[BookSearchResult])
 def search_metadata(
     q: str = Query(...),
+    limit: int = Query(10, ge=1, le=30),
+    lite: bool = Query(False),
     current_user: User = Depends(get_current_user),
 ):
     if not q.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Query must not be empty")
-    results = get_metadata_adapter().search(q)
-    logger.info("Metadata search for %r returned %d results (user %s)", q, len(results), current_user.id)
+    results = get_metadata_adapter().search(q, limit=limit, lite=lite)
+    logger.info("Metadata search for %r returned %d results (lite=%s, user %s)", q, len(results), lite, current_user.id)
     return [
         BookSearchResult(
             title=r.title,
