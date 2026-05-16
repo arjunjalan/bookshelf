@@ -9,6 +9,9 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/bookshelf
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openrouter}
+      LLM_MODEL: ${LLM_MODEL:-meta-llama/llama-3.1-8b-instruct:free}
 
   postgres:
     image: postgres:16-alpine

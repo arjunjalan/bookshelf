@@ -37,6 +37,12 @@ export default function Layout() {
               >
                 Stats
               </Link>
+              <Link
+                to="/chat"
+                className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
+              >
+                Chat
+              </Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
@@ -78,6 +84,13 @@ export default function Layout() {
                 onClick={() => setMenuOpen(false)}
               >
                 Stats
+              </Link>
+              <Link
+                to="/chat"
+                className="text-sm text-stone-600"
+                onClick={() => setMenuOpen(false)}
+              >
+                Chat
               </Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
