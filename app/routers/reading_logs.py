@@ -34,11 +34,12 @@ def list_reading_logs(
     status_filter: Optional[ReadingStatus] = Query(None, alias="status"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
+    book_id: Optional[uuid.UUID] = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     logs = reading_log_service.list_reading_logs(
-        db, current_user.id, status_filter, skip, limit
+        db, current_user.id, status_filter, skip, limit, book_id=book_id
     )
     return [ReadingLogRead.model_validate(log) for log in logs]
 

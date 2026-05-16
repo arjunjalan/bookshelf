@@ -54,6 +54,20 @@ def _format_profile(profile: dict) -> str:
     return _SYSTEM_PROMPT.format(genres=genres, authors=authors, ratings=ratings, pace=pace)
 
 
+def build_messages(
+    db: Session,
+    user_id: uuid.UUID,
+    message: str,
+    history: list[dict],
+) -> list[dict]:
+    profile = reader_profile_service.get_reader_profile(db, user_id)
+    system_content = _format_profile(profile)
+    messages: list[dict] = [{"role": "system", "content": system_content}]
+    messages.extend(history)
+    messages.append({"role": "user", "content": message})
+    return messages
+
+
 def get_chat_response(
     db: Session,
     user_id: uuid.UUID,
@@ -61,29 +75,10 @@ def get_chat_response(
     history: list[dict],
     llm: LLMAdapter,
 ) -> str:
-    profile = reader_profile_service.get_reader_profile(db, user_id)
-    system_content = _format_profile(profile)
-
-    messages: list[dict] = [{"role": "system", "content": system_content}]
-    messages.extend(history)
-    messages.append({"role": "user", "content": message})
-
+    messages = build_messages(db, user_id, message, history)
     result = llm.chat(messages)
     return result.text
 
 
-def get_chat_stream(
-    db: Session,
-    user_id: uuid.UUID,
-    message: str,
-    history: list[dict],
-    llm: LLMAdapter,
-) -> Generator[str, None, None]:
-    profile = reader_profile_service.get_reader_profile(db, user_id)
-    system_content = _format_profile(profile)
-
-    messages: list[dict] = [{"role": "system", "content": system_content}]
-    messages.extend(history)
-    messages.append({"role": "user", "content": message})
-
+def get_chat_stream(messages: list[dict], llm: LLMAdapter) -> Generator[str, None, None]:
     yield from llm.chat_stream(messages)

@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models.reading_log import ReadingStatus
 
@@ -24,6 +24,12 @@ class ReadingLogCreate(BaseModel):
     rating: Optional[int] = Field(default=None, ge=1, le=5)
     notes: Optional[str] = None
     mood: Optional[str] = None
+
+    @model_validator(mode='after')
+    def check_date_ordering(self):
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValueError('end_date must not be before start_date')
+        return self
 
 
 class ReadingLogRead(BaseModel):
@@ -51,3 +57,9 @@ class ReadingLogUpdate(BaseModel):
     rating: Optional[int] = Field(default=None, ge=1, le=5)
     notes: Optional[str] = None
     mood: Optional[str] = None
+
+    @model_validator(mode='after')
+    def check_date_ordering(self):
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValueError('end_date must not be before start_date')
+        return self
