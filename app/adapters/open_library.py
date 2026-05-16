@@ -4,7 +4,7 @@ from datetime import date
 
 import httpx
 
-from app.adapters.metadata import MetadataAdapter, MetadataResult
+from app.adapters.metadata import MetadataAdapter, MetadataResult, MetadataSearchPage
 
 logger = logging.getLogger(__name__)
 
@@ -34,18 +34,37 @@ def _fetch_description(key: str) -> str | None:
 
 class OpenLibraryAdapter(MetadataAdapter):
     def search(self, query: str, *, limit: int = 10, lite: bool = False) -> list[MetadataResult]:
+        return self.search_page(query, limit=limit, offset=0, lite=lite).results
+
+    def search_page(
+        self,
+        query: str,
+        *,
+        limit: int = 10,
+        offset: int = 0,
+        lite: bool = False,
+    ) -> MetadataSearchPage:
         try:
             with httpx.Client(timeout=5.0) as client:
                 response = client.get(_SEARCH_URL, params={
                     "q": query,
                     "limit": limit,
+                    "offset": offset,
                     "fields": _SEARCH_FIELDS,
                 })
                 response.raise_for_status()
-                docs = response.json().get("docs", [])
+                payload = response.json()
+                docs = payload.get("docs", [])
+                total = _parse_total(payload, fallback=offset + len(docs))
         except Exception:
             logger.warning("Open Library search failed for query %r", query, exc_info=True)
-            return []
+            return MetadataSearchPage(
+                results=[],
+                total=0,
+                offset=offset,
+                limit=limit,
+                has_more=False,
+            )
 
         valid_docs = [
             doc for doc in docs
@@ -54,6 +73,8 @@ class OpenLibraryAdapter(MetadataAdapter):
 
         if lite:
             descriptions = [None] * len(valid_docs)
+        elif not valid_docs:
+            descriptions = []
         else:
             keys = [doc.get("key") for doc in valid_docs]
             with ThreadPoolExecutor(max_workers=min(len(keys), 10)) as executor:
@@ -79,4 +100,20 @@ class OpenLibraryAdapter(MetadataAdapter):
                     published_date=date(year, 1, 1) if year and 1 <= year <= 9999 else None,
                 )
             )
-        return results
+        return MetadataSearchPage(
+            results=results,
+            total=total,
+            offset=offset,
+            limit=limit,
+            has_more=offset + limit < total,
+        )
+
+
+def _parse_total(payload: dict, *, fallback: int) -> int:
+    for key in ("num_found", "numFound"):
+        value = payload.get(key)
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str) and value.isdigit():
+            return int(value)
+    return fallback

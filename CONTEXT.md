@@ -97,6 +97,13 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-16 — Full search pagination
+- Branch/worktree: `fix/full-search-pagination` in `/home/aj/projects/bookshelf-full-search-pagination`.
+- `GET /metadata/search` keeps the default list response, adds `offset`, raises `limit` max to 50, and supports `paginated=true` with `{ results, total, offset, limit, has_more }`.
+- `OpenLibraryAdapter.search_page()` passes Open Library `limit`/`offset` and reads `num_found`/`numFound` defensively.
+- `frontend/src/pages/AddBook.jsx`: full Search now uses `useInfiniteQuery` and a `Load more` button; typeahead remains `lite=true` and capped to 10 visible dropdown results.
+- Verification: `uv run pytest tests/test_metadata.py`, `npm run lint`, `npm run build`.
+
 ### 2026-05-16 — Typeahead UX improvements (PR #79, closes #78)
 - `GET /metadata/search` gains `?lite=bool` and `?limit=int` (max 30) params.
 - `OpenLibraryAdapter.search()` skips Works API description fan-out when `lite=True` — 2–4× faster typeahead responses.
