@@ -6,9 +6,20 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 7 — Production Deployment**
+**Phase 7 — User Feedback and Iteration**
 
 Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
+
+---
+
+## Phase 7 — In Progress
+
+- [x] #74 Phase 7.3 — Typeahead book search (merged PR #77)
+- [ ] #72 Phase 7.1 — Bulk CSV book import
+- [ ] #73 Phase 7.2 — Chat history persistence
+- [ ] #75 Phase 7.4 — Frontend redesign
+- [ ] #76 Phase 7.5 — Social friends layer
+- [ ] Epic #71 open
 
 ---
 
@@ -84,6 +95,10 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Phase 7.3 — Typeahead book search (PR #77, closes #74)
+- `frontend/src/hooks/useDebounce.js`: new 8-line hook, `useEffect` + `setTimeout`, no new npm deps.
+- `frontend/src/pages/AddBook.jsx`: replaced submit-to-search flow with live typeahead dropdown. `committedQuery` pattern lets Search button bypass 300ms debounce for immediate fetch. `dropdownDismissed` flag (avoids `setState-in-effect` lint error). `onMouseDown` + `e.preventDefault()` on result buttons prevents blur-before-select race. `dropdownVisible` gated on both raw `query` and debounced `effectiveQuery` to avoid ghost dropdown when input is cleared. TanStack Query `staleTime: 30s` caches results per query string.
 
 ### 2026-05-16 — Pre-phase-7 review fixes (PR #70, closes #63–#69)
 - **#63/#69 — SSE streaming chat**: `POST /chat` returns `StreamingResponse`; DB session materialised before generator via `build_messages()`; `get_chat_stream()` receives `messages` list only. Frontend uses `fetch()` + `ReadableStream`; `useRef` for streaming content accumulation; `clearAuthAndRedirect()` called on 401.
