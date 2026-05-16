@@ -85,6 +85,16 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-16 — Pre-phase-7 review fixes (PR #70, closes #63–#69)
+- **#63/#69 — SSE streaming chat**: `POST /chat` returns `StreamingResponse`; DB session materialised before generator via `build_messages()`; `get_chat_stream()` receives `messages` list only. Frontend uses `fetch()` + `ReadableStream`; `useRef` for streaming content accumulation; `clearAuthAndRedirect()` called on 401.
+- **#64 — server-side validation**: `end_date >= start_date` validator on `ReadingLogCreate`/`ReadingLogUpdate`; `title`/`author` `min_length=1` and `page_count >= 1` on `BookCreate`/`BookUpdate`.
+- **#65 — POST /chat request bounds**: `ChatRequest` message `max_length=2000`, history `max_length=50`, `ChatMessage` content `max_length=4000`.
+- **#66 — BookDetail book_id query**: `GET /reading-logs?book_id=<uuid>` added to router and service; `BookDetail` queries with `book_id` directly and uses `logs?.[0]` instead of client-side `.find()`.
+- **#67 — OpenRouter model default**: Default switched to `openrouter/free`; `max_tokens=1024` cap on both `chat()` and `chat_stream()`.
+- **#68 — CI frontend lint**: `lint-frontend` job added to `ci.yml` using Node 20, `npm ci`, `npm run lint`.
+- **Migration 0007**: `CHECK (pace_days IS NULL OR pace_days >= 0)`.
+- Worktree `bookshelf-pre-phase7` removed; issues #63–#69 closed.
+
 ### 2026-05-16 — Phase 6 post-merge fixes (PRs #59, #61, #62)
 - PR #59: `react-markdown` + `@tailwindcss/typography` added; assistant bubbles render formatted markdown.
 - PR #61: Streaming SSE — `POST /chat` returns `StreamingResponse`; frontend uses `fetch()` + `ReadableStream`; tokens stream into bubble in real time; "Thinking…" pulse on empty bubble; input locked during stream.
