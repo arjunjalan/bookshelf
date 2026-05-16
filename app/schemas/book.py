@@ -2,17 +2,17 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BookCreate(BaseModel):
-    title: str
-    author: str
+    title: str = Field(min_length=1)
+    author: str = Field(min_length=1)
     genre: Optional[str] = None
     isbn: Optional[str] = None
     cover_url: Optional[str] = None
     description: Optional[str] = None
-    page_count: Optional[int] = None
+    page_count: Optional[int] = Field(default=None, ge=1)
     published_date: Optional[date] = None
 
 
@@ -43,11 +43,11 @@ class BookSearchResult(BaseModel):
 
 
 class BookUpdate(BaseModel):
-    title: Optional[str] = None
-    author: Optional[str] = None
+    title: Optional[str] = Field(default=None, min_length=1)
+    author: Optional[str] = Field(default=None, min_length=1)
     genre: Optional[str] = None
     isbn: Optional[str] = None
     cover_url: Optional[str] = None
     description: Optional[str] = None
-    page_count: Optional[int] = None
+    page_count: Optional[int] = Field(default=None, ge=1)
     published_date: Optional[date] = None

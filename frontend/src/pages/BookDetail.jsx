@@ -49,11 +49,11 @@ export default function BookDetail() {
   })
 
   const { data: logs, isLoading: logsLoading } = useQuery({
-    queryKey: ['reading-logs'],
-    queryFn: () => client.get('/reading-logs').then((r) => r.data),
+    queryKey: ['reading-logs', { book_id: id }],
+    queryFn: () => client.get(`/reading-logs?book_id=${id}`).then((r) => r.data),
   })
 
-  const log = logs?.find((l) => l.book_id === id)
+  const log = logs?.[0]
 
   const updateMutation = useMutation({
     mutationFn: (payload) => {

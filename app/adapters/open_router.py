@@ -13,7 +13,7 @@ _BASE_URL = "https://openrouter.ai/api/v1"
 
 class OpenRouterAdapter(LLMAdapter):
     def __init__(self) -> None:
-        self._model = os.getenv("LLM_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+        self._model = os.getenv("LLM_MODEL", "openrouter/free")
         self._client = OpenAI(
             api_key=os.getenv("OPENROUTER_API_KEY", ""),
             base_url=_BASE_URL,
@@ -24,6 +24,7 @@ class OpenRouterAdapter(LLMAdapter):
         response = self._client.chat.completions.create(
             model=self._model,
             messages=messages,
+            max_tokens=1024,
         )
         if not response.choices or not response.choices[0].message.content:
             finish_reason = repr(response.choices[0].finish_reason) if response.choices else "no choices"
@@ -36,6 +37,7 @@ class OpenRouterAdapter(LLMAdapter):
             model=self._model,
             messages=messages,
             stream=True,
+            max_tokens=1024,
         )
         for chunk in stream:
             if chunk.choices and chunk.choices[0].delta.content:

@@ -44,10 +44,13 @@ def list_reading_logs(
     status_filter: Optional[ReadingStatus],
     skip: int,
     limit: int,
+    book_id: Optional[uuid.UUID] = None,
 ) -> list[ReadingLog]:
     q = _with_book(db.query(ReadingLog).filter(ReadingLog.user_id == user_id))
     if status_filter is not None:
         q = q.filter(ReadingLog.status == status_filter)
+    if book_id is not None:
+        q = q.filter(ReadingLog.book_id == book_id)
     return q.order_by(ReadingLog.created_at.desc()).offset(skip).limit(limit).all()
 
 

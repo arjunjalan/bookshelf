@@ -25,16 +25,16 @@ def post_chat(
     llm: LLMAdapter = Depends(get_llm_adapter),
 ):
     logger.info("Chat request from user %s", current_user.id)
+    messages = chat_service.build_messages(
+        db=db,
+        user_id=current_user.id,
+        message=body.message,
+        history=[h.model_dump() for h in body.history],
+    )
 
     def generate():
         try:
-            for chunk in chat_service.get_chat_stream(
-                db=db,
-                user_id=current_user.id,
-                message=body.message,
-                history=[h.model_dump() for h in body.history],
-                llm=llm,
-            ):
+            for chunk in chat_service.get_chat_stream(messages=messages, llm=llm):
                 yield f"data: {json.dumps({'chunk': chunk})}\n\n"
             yield "data: [DONE]\n\n"
         except Exception:

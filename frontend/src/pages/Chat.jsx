@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { clearAuthAndRedirect } from '../api/client'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -10,6 +11,7 @@ export default function Chat() {
   const [error, setError] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const bottomRef = useRef(null)
+  const streamingContentRef = useRef('')
 
   async function sendMessage(text) {
     if (!text || isStreaming) return
@@ -18,8 +20,7 @@ export default function Chat() {
     setInput('')
     setError('')
     setIsStreaming(true)
-
-    let assistantContent = ''
+    streamingContentRef.current = ''
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
     try {
@@ -32,6 +33,11 @@ export default function Chat() {
         },
         body: JSON.stringify({ message: text, history: prevMessages }),
       })
+
+      if (response.status === 401) {
+        clearAuthAndRedirect()
+        return
+      }
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
@@ -59,10 +65,11 @@ export default function Chat() {
             const parsed = JSON.parse(data)
             if (parsed.error) throw new Error(parsed.error)
             if (parsed.chunk) {
-              assistantContent += parsed.chunk
+              streamingContentRef.current += parsed.chunk
+              const content = streamingContentRef.current
               setMessages((prev) => {
                 const updated = [...prev]
-                updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+                updated[updated.length - 1] = { role: 'assistant', content }
                 return updated
               })
             }
@@ -72,10 +79,10 @@ export default function Chat() {
         }
       }
     } catch (err) {
-      if (assistantContent) {
+      if (streamingContentRef.current) {
         setMessages((prev) => {
           const updated = [...prev]
-          updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+          updated[updated.length - 1] = { role: 'assistant', content: streamingContentRef.current }
           return updated
         })
         setError(err.message || 'Response ended unexpectedly.')
