@@ -1,0 +1,31 @@
+import logging
+import os
+
+from openai import OpenAI
+
+from app.adapters.llm import LLMAdapter, LLMResult
+
+logger = logging.getLogger(__name__)
+
+_BASE_URL = "https://openrouter.ai/api/v1"
+
+
+class OpenRouterAdapter(LLMAdapter):
+    def __init__(self) -> None:
+        self._model = os.getenv("LLM_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+        self._client = OpenAI(
+            api_key=os.getenv("OPENROUTER_API_KEY", ""),
+            base_url=_BASE_URL,
+        )
+
+    def chat(self, messages: list[dict]) -> LLMResult:
+        logger.debug("Sending %d messages to OpenRouter model %s", len(messages), self._model)
+        response = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+        )
+        if not response.choices or not response.choices[0].message.content:
+            raise ValueError(
+                f"Empty response from model (finish_reason={response.choices[0].finish_reason!r if response.choices else 'no choices'})"
+            )
+        return LLMResult(text=response.choices[0].message.content)

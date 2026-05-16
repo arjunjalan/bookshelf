@@ -7,6 +7,7 @@ import Books from './pages/Books'
 import AddBook from './pages/AddBook'
 import BookDetail from './pages/BookDetail'
 import Stats from './pages/Stats'
+import Chat from './pages/Chat'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/books/add" element={<AddBook />} />
           <Route path="/books/:id" element={<BookDetail />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/chat" element={<Chat />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
