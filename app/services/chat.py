@@ -1,5 +1,6 @@
 import logging
 import uuid
+from collections.abc import Generator
 
 from sqlalchemy.orm import Session
 
@@ -10,8 +11,10 @@ logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = """\
 You are a personal reading companion. Answer questions about books, reading, \
-and recommendations in a conversational, helpful tone. Be concise — keep \
-replies to 3-5 sentences or a short list. Avoid lengthy preamble or padding.
+and recommendations in a conversational, helpful tone. Be concise but not \
+terse — aim for a short paragraph or a list of 2-4 items, each with a brief \
+reason why it fits this reader. Skip lengthy preamble, but do explain your \
+reasoning in one sentence per recommendation.
 
 Here is the user's reading history and preferences:
 
@@ -67,3 +70,20 @@ def get_chat_response(
 
     result = llm.chat(messages)
     return result.text
+
+
+def get_chat_stream(
+    db: Session,
+    user_id: uuid.UUID,
+    message: str,
+    history: list[dict],
+    llm: LLMAdapter,
+) -> Generator[str, None, None]:
+    profile = reader_profile_service.get_reader_profile(db, user_id)
+    system_content = _format_profile(profile)
+
+    messages: list[dict] = [{"role": "system", "content": system_content}]
+    messages.extend(history)
+    messages.append({"role": "user", "content": message})
+
+    yield from llm.chat_stream(messages)
