@@ -1,5 +1,6 @@
 import logging
 import os
+from collections.abc import Generator
 
 from openai import OpenAI
 
@@ -28,3 +29,14 @@ class OpenRouterAdapter(LLMAdapter):
             finish_reason = repr(response.choices[0].finish_reason) if response.choices else "no choices"
             raise ValueError(f"Empty response from model (finish_reason={finish_reason})")
         return LLMResult(text=response.choices[0].message.content)
+
+    def chat_stream(self, messages: list[dict]) -> Generator[str, None, None]:
+        logger.debug("Streaming %d messages to OpenRouter model %s", len(messages), self._model)
+        stream = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content

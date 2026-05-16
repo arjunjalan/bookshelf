@@ -1,37 +1,90 @@
 import { useEffect, useRef, useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
 import ReactMarkdown from 'react-markdown'
-import client from '../api/client'
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function Chat() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [error, setError] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
   const bottomRef = useRef(null)
 
-  const chatMutation = useMutation({
-    mutationFn: ({ message, history }) =>
-      client.post('/chat', { message, history }).then((r) => r.data),
-    onSuccess: (data) => {
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }])
-      setError('')
-    },
-  })
-
-  function sendMessage(text) {
-    if (!text || chatMutation.isPending) return
+  async function sendMessage(text) {
+    if (!text || isStreaming) return
     const prevMessages = messages
     setMessages((prev) => [...prev, { role: 'user', content: text }])
     setInput('')
-    chatMutation.mutate(
-      { message: text, history: prevMessages },
-      {
-        onError: (err) => {
-          setMessages(prevMessages)
-          setError(err.response?.data?.detail || 'Something went wrong. Please try again.')
+    setError('')
+    setIsStreaming(true)
+
+    let assistantContent = ''
+    setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+
+    try {
+      const token = localStorage.getItem('bs_token')
+      const response = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ message: text, history: prevMessages }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.detail || 'Something went wrong. Please try again.')
       }
-    )
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split('\n\n')
+        buffer = events.pop()
+
+        for (const event of events) {
+          const line = event.trim()
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6)
+          if (data === '[DONE]') break
+          try {
+            const parsed = JSON.parse(data)
+            if (parsed.error) throw new Error(parsed.error)
+            if (parsed.chunk) {
+              assistantContent += parsed.chunk
+              setMessages((prev) => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+                return updated
+              })
+            }
+          } catch (e) {
+            if (e.message !== 'Unexpected token') throw e
+          }
+        }
+      }
+    } catch (err) {
+      if (assistantContent) {
+        setMessages((prev) => {
+          const updated = [...prev]
+          updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+          return updated
+        })
+        setError(err.message || 'Response ended unexpectedly.')
+      } else {
+        setMessages(prevMessages)
+        setError(err.message || 'Something went wrong. Please try again.')
+      }
+    } finally {
+      setIsStreaming(false)
+    }
   }
 
   function handleSend() {
@@ -40,7 +93,7 @@ export default function Chat() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, chatMutation.isPending])
+  }, [messages, isStreaming])
 
   return (
     <div className="flex flex-col gap-4 max-w-2xl">
@@ -81,19 +134,15 @@ export default function Chat() {
               </p>
             ) : (
               <div className="px-4 py-2 rounded-xl rounded-bl-sm text-sm max-w-[80%] bg-stone-100 text-stone-900 prose prose-sm prose-stone max-w-none">
-                <ReactMarkdown>{m.content}</ReactMarkdown>
+                {m.content ? (
+                  <ReactMarkdown>{m.content}</ReactMarkdown>
+                ) : (
+                  <span className="text-stone-400 animate-pulse">Thinking…</span>
+                )}
               </div>
             )}
           </div>
         ))}
-
-        {chatMutation.isPending && (
-          <div className="flex justify-start">
-            <p className="px-4 py-2 rounded-xl rounded-bl-sm text-sm bg-stone-100 text-stone-400 animate-pulse">
-              Thinking…
-            </p>
-          </div>
-        )}
 
         <div ref={bottomRef} />
       </div>
@@ -121,10 +170,10 @@ export default function Chat() {
         <button
           type="button"
           onClick={handleSend}
-          disabled={chatMutation.isPending || !input.trim()}
+          disabled={isStreaming || !input.trim()}
           className="bg-stone-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
         >
-          {chatMutation.isPending ? 'Sending…' : 'Send'}
+          {isStreaming ? 'Sending…' : 'Send'}
         </button>
       </div>
     </div>
