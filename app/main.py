@@ -10,7 +10,7 @@ from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 
-from app.routers import analytics, auth, books, chat, metadata, reading_logs, reader_profile  # noqa: E402
+from app.routers import analytics, auth, books, chat, import_csv, metadata, reading_logs, reader_profile  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,6 +50,7 @@ app.include_router(reading_logs.router)
 app.include_router(metadata.router)
 app.include_router(reader_profile.router)
 app.include_router(chat.router)
+app.include_router(import_csv.router)
 
 
 @app.get("/health")
