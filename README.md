@@ -31,7 +31,7 @@ bookshelf/
 │   │   ├── api/        # Axios client
 │   │   ├── contexts/   # AuthContext (JWT state)
 │   │   ├── components/ # Layout, ProtectedRoute, BookCard
-│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, Stats
+│   │   └── pages/      # Login, Register, Books, AddBook, BookDetail, Stats, Chat
 │   ├── .env.example
 │   └── vite.config.js
 ├── alembic/            # Database migrations
@@ -92,6 +92,7 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 | `GET` | `/analytics/by-author` | Books read per author |
 | `GET` | `/analytics/pace` | Days to finish per book |
 | `GET` | `/reader-profile` | Structured reader preference profile (genre/author affinity, rating distribution, pace by genre) |
+| `POST` | `/chat` | Send a message to the reading companion (multi-turn, reader-profile context injected) |
 | `GET` | `/health` | Health check |
 
 Reading status values: `reading`, `read`, `want_to_read`
@@ -103,5 +104,5 @@ Reading status values: `reading`, `read`, `want_to_read`
 - [x] **Phase 3** — Book metadata enrichment via Open Library API
 - [x] **Phase 4** — Reading analytics
 - [x] **Phase 5** — Reader profile and preference signals
-- [ ] **Phase 6** — Natural language interface (OpenAI)
-- [ ] **Phase 6** — Natural language interface (OpenAI)
+- [x] **Phase 6** — Natural language interface (OpenRouter + reading companion chat)
+- [ ] **Phase 7** — Production deployment (Render · Vercel · Supabase)

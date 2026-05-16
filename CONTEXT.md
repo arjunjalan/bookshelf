@@ -6,9 +6,18 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 6 — Natural Language Interface**
+**Phase 7 — Production Deployment**
 
-Phases 1, 2, 3, 4, and 5 are complete and closed.
+Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
+
+---
+
+## Phase 6 — Complete
+
+- [x] #54 Phase 6.1 — LLMAdapter: protocol + OpenRouter implementation (merged PR #58)
+- [x] #55 Phase 6.2 — /chat API endpoint with reader profile context injection (merged PR #58)
+- [x] #56 Phase 6.3 — Chat UI (merged PR #58)
+- [x] Epic #6 closed
 
 ---
 
@@ -74,6 +83,20 @@ Phases 1, 2, 3, 4, and 5 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Phase 6 complete (PR #58)
+- `app/adapters/llm.py`: `LLMAdapter` ABC + `LLMResult` dataclass.
+- `app/adapters/open_router.py`: `OpenRouterAdapter` — OpenAI SDK with `base_url="https://openrouter.ai/api/v1"`. Model set via `LLM_MODEL` env var (default: `meta-llama/llama-3.1-8b-instruct:free`). Guards against empty choices/content. Lazy import via factory.
+- `app/adapters/__init__.py`: extended with `get_llm_adapter()` factory (lazy imports, `LLM_PROVIDER` env var).
+- `app/schemas/chat.py`: `ChatMessage` (`role: Literal["user","assistant"]`), `ChatRequest` (message + history), `ChatResponse` (reply).
+- `app/services/chat.py`: `get_chat_response()` — fetches reader profile, formats as natural language system prompt, prepends history, calls LLM adapter.
+- `app/routers/chat.py`: `POST /chat` — JWT-protected, injects `get_llm_adapter` via `Depends`; 503 on LLM failure.
+- `app/main.py`: chat router registered.
+- `frontend/src/pages/Chat.jsx`: multi-turn chat UI — suggestion chips (auto-send), animate-pulse "Thinking…" bubble, message history, error recovery (snapshot/restore on failure), auto-scroll.
+- `frontend/src/App.jsx` + `frontend/src/components/Layout.jsx`: Chat route + nav link added.
+- `docker-compose.yml` + `.env.example`: `OPENROUTER_API_KEY`, `LLM_PROVIDER`, `LLM_MODEL` env vars documented.
+- `.github/workflows/e2e.yml`: `prune-cache: false` on setup-uv to fix post-job uv cache prune failure (uv 0.11.14 exit code 2).
+- Rebuilt Docker image post-merge (`./scripts/start.sh --build`) — `openai` package now baked in.
 
 ### 2026-05-16 — Phase 5 complete (PR #57)
 - `alembic/versions/0006_reader_profile_views.py`: three regular PostgreSQL views — `v_genre_affinity` (genre + books_read + avg_rating), `v_author_affinity` (author + books_read + avg_rating), `v_pace_by_genre` (genre + avg_days). All per-user via `user_id` in SELECT; `AVG()` returns null for genres/authors with no ratings (correct by design).
