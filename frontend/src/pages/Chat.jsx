@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -133,12 +134,23 @@ export default function Chat() {
                 {m.content}
               </p>
             ) : (
-              <div className="px-4 py-2 rounded-xl rounded-bl-sm text-sm max-w-[80%] bg-stone-100 text-stone-900 prose prose-sm prose-stone max-w-none">
-                {m.content ? (
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
-                ) : (
-                  <span className="text-stone-400 animate-pulse">Thinking…</span>
-                )}
+              <div className="max-w-[80%]">
+                <div className="px-4 py-2 rounded-xl rounded-bl-sm text-sm bg-stone-100 text-stone-900 prose prose-sm prose-stone max-w-none overflow-x-auto">
+                  {m.content ? (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({ href, children }) => (
+                          <a href={href} target="_blank" rel="noreferrer">{children}</a>
+                        ),
+                      }}
+                    >
+                      {m.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <span className="text-stone-400 animate-pulse">Thinking…</span>
+                  )}
+                </div>
               </div>
             )}
           </div>
