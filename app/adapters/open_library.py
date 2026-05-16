@@ -33,12 +33,12 @@ def _fetch_description(key: str) -> str | None:
 
 
 class OpenLibraryAdapter(MetadataAdapter):
-    def search(self, query: str) -> list[MetadataResult]:
+    def search(self, query: str, *, limit: int = 10, lite: bool = False) -> list[MetadataResult]:
         try:
             with httpx.Client(timeout=5.0) as client:
                 response = client.get(_SEARCH_URL, params={
                     "q": query,
-                    "limit": 10,
+                    "limit": limit,
                     "fields": _SEARCH_FIELDS,
                 })
                 response.raise_for_status()
@@ -52,12 +52,15 @@ class OpenLibraryAdapter(MetadataAdapter):
             if doc.get("title") and doc.get("author_name")
         ]
 
-        keys = [doc.get("key") for doc in valid_docs]
-        with ThreadPoolExecutor(max_workers=min(len(keys), 10)) as executor:
-            descriptions = list(executor.map(
-                lambda k: _fetch_description(k) if k else None,
-                keys,
-            ))
+        if lite:
+            descriptions = [None] * len(valid_docs)
+        else:
+            keys = [doc.get("key") for doc in valid_docs]
+            with ThreadPoolExecutor(max_workers=min(len(keys), 10)) as executor:
+                descriptions = list(executor.map(
+                    lambda k: _fetch_description(k) if k else None,
+                    keys,
+                ))
 
         results = []
         for doc, description in zip(valid_docs, descriptions):

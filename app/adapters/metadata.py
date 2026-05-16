@@ -16,5 +16,5 @@ class MetadataResult:
 
 class MetadataAdapter(ABC):
     @abstractmethod
-    def search(self, query: str) -> list[MetadataResult]:
+    def search(self, query: str, *, limit: int = 10, lite: bool = False) -> list[MetadataResult]:
         ...
