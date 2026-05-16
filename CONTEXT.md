@@ -16,7 +16,8 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 
 - [x] #74 Phase 7.3 — Typeahead book search (merged PR #77)
 - [x] #78 Typeahead UX improvements — lite mode + full results list (merged PR #79)
-- [ ] #72 Phase 7.1 — Bulk CSV book import
+- [x] #80 Full search pagination — useInfiniteQuery + Load more (merged PR #80, Codex)
+- [x] #72 Phase 7.1 — Bulk CSV book import (merged PR #81)
 - [ ] #73 Phase 7.2 — Chat history persistence
 - [ ] #75 Phase 7.4 — Frontend redesign
 - [ ] #76 Phase 7.5 — Social friends layer
@@ -96,6 +97,14 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Phase 7.1 — Bulk CSV book import (PR #81, closes #72)
+- `app/schemas/import_csv.py`: `ImportRowError` + `ImportSummary` Pydantic schemas.
+- `app/services/import_csv.py`: Goodreads CSV parser — detects format via `{"Book Id", "Exclusive Shelf"}` header check; strips `="..."` ISBN encoding; maps shelf to `ReadingStatus`; deduplicates by ISBN first, then `(title, author)` for ISBN-less books; per-row `db.commit()` via ORM relationship (no `flush()`); returns `ImportSummary`.
+- `app/routers/import_csv.py`: `POST /import/csv` — `UploadFile`, 5 MB limit, `.csv` extension check, `ValueError` → 422.
+- `pyproject.toml`: `python-multipart>=0.0.9` added (required for FastAPI `UploadFile`; missing caused CI failure).
+- `frontend/src/pages/ImportCSV.jsx`: file picker dropzone, `useMutation` with `FormData`, summary stat cards (green/amber/red), error table with row numbers, step-by-step Goodreads export instructions. `summary` sourced from `mutation.data` (not useState). Invalidates `['reading-logs']` and `['analytics']` on successful import.
+- Nav link added to desktop + mobile in `Layout.jsx`; `/import` route added to `App.jsx`.
 
 ### 2026-05-16 — Full search pagination
 - Branch/worktree: `fix/full-search-pagination` in `/home/aj/projects/bookshelf-full-search-pagination`.
