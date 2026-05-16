@@ -42,6 +42,14 @@ class BookSearchResult(BaseModel):
     published_date: Optional[date] = None
 
 
+class BookSearchPage(BaseModel):
+    results: list[BookSearchResult]
+    total: int
+    offset: int
+    limit: int
+    has_more: bool
+
+
 class BookUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1)
     author: Optional[str] = Field(default=None, min_length=1)

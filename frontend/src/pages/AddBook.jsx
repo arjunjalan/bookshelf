@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import client from '../api/client'
 import { useDebounce } from '../hooks/useDebounce'
+
+const FULL_SEARCH_LIMIT = 25
 
 const STATUS_OPTIONS = [
   { label: 'Currently Reading', value: 'reading' },
@@ -196,15 +198,43 @@ export default function AddBook() {
     retry: false,
   })
 
-  // full search: triggered by Search button, fetches descriptions + up to 25 results
-  const { data: fullResults = [], isFetching: fullLoading, isError: fullFailed } = useQuery({
+  // full search: triggered by Search button, paginates lightweight result chunks
+  const {
+    data: fullSearchData,
+    isFetching: fullFetching,
+    isLoading: fullInitialLoading,
+    isFetchingNextPage,
+    isError: fullFailed,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
     queryKey: ['metadata-full-search', fullSearchQuery],
-    queryFn: () =>
-      client.get('/metadata/search', { params: { q: fullSearchQuery, limit: 25 } }).then((r) => r.data),
+    queryFn: ({ pageParam = 0 }) =>
+      client
+        .get('/metadata/search', {
+          params: {
+            q: fullSearchQuery,
+            limit: FULL_SEARCH_LIMIT,
+            offset: pageParam,
+            lite: true,
+            paginated: true,
+          },
+        })
+        .then((r) => r.data),
     enabled: fullSearchQuery.trim().length >= 2,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.has_more) return undefined
+      return lastPage.offset + lastPage.limit
+    },
     staleTime: 30_000,
     retry: false,
   })
+
+  const fullPages = fullSearchData?.pages ?? []
+  const fullResults = fullPages.flatMap((page) => page.results)
+  const fullTotal = fullPages[0]?.total ?? fullResults.length
+  const fullLoading = fullInitialLoading || (fullFetching && fullResults.length === 0)
 
   // close dropdown on outside click
   useEffect(() => {
@@ -388,10 +418,10 @@ export default function AddBook() {
                   />
                   <button
                     type="submit"
-                    disabled={fullLoading || !query.trim()}
+                    disabled={fullFetching || !query.trim()}
                     className="bg-stone-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
                   >
-                    {fullLoading ? 'Searching…' : 'Search'}
+                    {fullFetching && !isFetchingNextPage ? 'Searching…' : 'Search'}
                   </button>
                 </div>
 
@@ -474,13 +504,26 @@ export default function AddBook() {
           {/* ── Full results list (shown after Search button click) ── */}
           {showFullResults && (
             <div className="flex flex-col gap-2">
-              <p className="text-xs text-stone-400 px-1">
-                {fullLoading
-                  ? `Searching for "${fullSearchQuery}"…`
-                  : fullFailed
-                  ? 'Search failed.'
-                  : `${fullResults.length} result${fullResults.length !== 1 ? 's' : ''} for "${fullSearchQuery}"`}
-              </p>
+              <div className="flex items-center justify-between gap-3 px-1">
+                <p className="text-xs text-stone-400">
+                  {fullLoading
+                    ? `Searching for "${fullSearchQuery}"…`
+                    : fullFailed
+                    ? 'Search failed.'
+                    : `Showing ${fullResults.length} of ${fullTotal} results for "${fullSearchQuery}"`}
+                </p>
+
+                {hasNextPage && !fullLoading && !fullFailed && fullResults.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    className="flex-shrink-0 border border-stone-200 bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-colors"
+                  >
+                    {isFetchingNextPage ? 'Loading…' : 'Load more'}
+                  </button>
+                )}
+              </div>
 
               {fullLoading && (
                 <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden">
@@ -517,7 +560,7 @@ export default function AddBook() {
               {!fullLoading && !fullFailed && fullResults.length > 0 && (
                 <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden overflow-y-auto" style={{ maxHeight: '30rem' }}>
                   {fullResults.map((r, i) => (
-                    <SearchResult key={i} result={r} isActive={false} onSelect={selectResult} innerRef={null} />
+                    <SearchResult key={`${r.title}-${r.author}-${r.isbn ?? i}`} result={r} isActive={false} onSelect={selectResult} innerRef={null} />
                   ))}
                 </ul>
               )}
