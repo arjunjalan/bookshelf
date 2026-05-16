@@ -16,7 +16,8 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 
 - [x] #54 Phase 6.1 — LLMAdapter: protocol + OpenRouter implementation (merged PR #58)
 - [x] #55 Phase 6.2 — /chat API endpoint with reader profile context injection (merged PR #58)
-- [x] #56 Phase 6.3 — Chat UI (merged PR #58)
+- [x] #56 Phase 6.3 — Chat UI (merged PR #58, #59, #62)
+- [x] #60 Phase 6.4 — Streaming chat responses SSE (merged PR #61)
 - [x] Epic #6 closed
 
 ---
@@ -83,6 +84,13 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Phase 6 post-merge fixes (PRs #59, #61, #62)
+- PR #59: `react-markdown` + `@tailwindcss/typography` added; assistant bubbles render formatted markdown.
+- PR #61: Streaming SSE — `POST /chat` returns `StreamingResponse`; frontend uses `fetch()` + `ReadableStream`; tokens stream into bubble in real time; "Thinking…" pulse on empty bubble; input locked during stream.
+- PR #62: Comprehensive markdown rendering fixes — `remark-gfm` for tables/strikethrough; `max-w` conflict fix (outer `max-w-[80%]` + inner `max-w-none`); `overflow-x-auto` for wide tables; links open in new tab.
+- Model: switched from `meta-llama/llama-3.1-8b-instruct:free` (removed) → `google/gemma-4-31b-it:free` (rate-limited) → `openrouter/free` (auto-router, free models only). `openrouter/auto` briefly used in error — routes to paid models.
+- System prompt tuned twice: "3-5 sentences" was too terse; settled on "short paragraph or 2-4 item list with one sentence of reasoning per item."
 
 ### 2026-05-16 — Phase 6 complete (PR #58)
 - `app/adapters/llm.py`: `LLMAdapter` ABC + `LLMResult` dataclass.
