@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import client from '../api/client'
+import { useDebounce } from '../hooks/useDebounce'
 
 const STATUS_OPTIONS = [
   { label: 'Currently Reading', value: 'reading' },
@@ -124,36 +125,129 @@ function LogSection({ form, setForm }) {
   )
 }
 
+function SearchResult({ result, isActive, onSelect, innerRef }) {
+  return (
+    <li ref={innerRef}>
+      <button
+        type="button"
+        onMouseDown={(e) => { e.preventDefault(); onSelect(result) }}
+        className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${
+          isActive ? 'bg-stone-100' : 'hover:bg-stone-50'
+        }`}
+      >
+        {result.cover_url ? (
+          <img
+            src={result.cover_url}
+            alt={result.title}
+            className="w-9 h-12 object-cover rounded flex-shrink-0"
+          />
+        ) : (
+          <div className="w-9 h-12 bg-stone-100 rounded flex-shrink-0 flex items-center justify-center text-stone-300 text-lg">
+            ▪
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-stone-900 truncate">{result.title}</p>
+          <p className="text-xs text-stone-500 truncate">{result.author}</p>
+          {result.published_date && (
+            <p className="text-xs text-stone-400">
+              {new Date(result.published_date).getUTCFullYear()}
+            </p>
+          )}
+        </div>
+      </button>
+    </li>
+  )
+}
+
 export default function AddBook() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
   // mode: 'search' | 'confirm' | 'manual'
   const [mode, setMode] = useState('search')
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
-  const [searching, setSearching] = useState(false)
-  const [searchError, setSearchError] = useState('')
 
+  // search state
+  const [query, setQuery] = useState('')
+  const [committedQuery, setCommittedQuery] = useState('')
+  const [dropdownDismissed, setDropdownDismissed] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+
+  const debouncedQuery = useDebounce(query, 300)
+  // committedQuery is set immediately when Search is clicked, bypassing debounce
+  const effectiveQuery = committedQuery || debouncedQuery
+
+  const inputRef = useRef(null)
+  const dropdownRef = useRef(null)
+  const activeItemRef = useRef(null)
+  const containerRef = useRef(null)
+
+  // form state
   const [bookForm, setBookForm] = useState(EMPTY_MANUAL)
   const [logForm, setLogForm] = useState(EMPTY_LOG)
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleSearch(e) {
+  const { data: searchResults = [], isFetching: searchLoading, isError: searchFailed } = useQuery({
+    queryKey: ['metadata-search', effectiveQuery],
+    queryFn: () =>
+      client.get('/metadata/search', { params: { q: effectiveQuery } }).then((r) => r.data),
+    enabled: effectiveQuery.trim().length >= 2,
+    staleTime: 30_000,
+    retry: false,
+  })
+
+  // close dropdown on outside click
+  useEffect(() => {
+    function handleOutsideClick(e) {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setDropdownDismissed(true)
+        setActiveIndex(-1)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
+
+  // scroll active item into view
+  useEffect(() => {
+    activeItemRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex])
+
+  const visibleResults = searchResults.slice(0, 10)
+
+  function handleSearch(e) {
     e.preventDefault()
     if (!query.trim()) return
-    setSearching(true)
-    setSearchError('')
-    setResults([])
-    try {
-      const { data } = await client.get('/metadata/search', { params: { q: query.trim() } })
-      setResults(data)
-      if (data.length === 0) setSearchError('No results found.')
-    } catch {
-      setSearchError('Search failed. Try again or add manually.')
-    } finally {
-      setSearching(false)
+    // bypass debounce — trigger immediately
+    setCommittedQuery(query.trim())
+    setDropdownDismissed(false)
+    setActiveIndex(-1)
+  }
+
+  function handleInputChange(e) {
+    setQuery(e.target.value)
+    // clear committed so debounce takes over; re-open dropdown on new input
+    setCommittedQuery('')
+    setDropdownDismissed(false)
+    setActiveIndex(-1)
+  }
+
+  function handleKeyDown(e) {
+    if (dropdownDismissed || effectiveQuery.trim().length < 2) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex((i) => Math.min(i + 1, visibleResults.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex((i) => Math.max(i - 1, -1))
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault()
+      selectResult(visibleResults[activeIndex])
+    } else if (e.key === 'Escape') {
+      setDropdownDismissed(true)
+      setActiveIndex(-1)
+      inputRef.current?.focus()
     }
   }
 
@@ -168,6 +262,8 @@ export default function AddBook() {
       page_count: result.page_count != null ? String(result.page_count) : '',
       published_date: result.published_date ?? '',
     })
+    setDropdownDismissed(true)
+    setActiveIndex(-1)
     setSubmitError('')
     setMode('confirm')
   }
@@ -175,6 +271,7 @@ export default function AddBook() {
   function goManual() {
     setBookForm(EMPTY_MANUAL)
     setSubmitError('')
+    setDropdownDismissed(true)
     setMode('manual')
   }
 
@@ -238,6 +335,9 @@ export default function AddBook() {
   const inputCls =
     'border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300'
 
+  // gate on both raw query (instant) and effectiveQuery (debounced) to avoid ghost dropdown on clear
+  const dropdownVisible = !dropdownDismissed && query.trim().length >= 2 && effectiveQuery.trim().length >= 2
+
   return (
     <div className="max-w-lg">
       <div className="flex items-center gap-3 mb-6">
@@ -258,23 +358,98 @@ export default function AddBook() {
             className="bg-white rounded-xl border border-stone-200 p-6 flex flex-col gap-4"
           >
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="book-search" className="text-sm font-medium text-stone-700">Search for a book</label>
-              <div className="flex gap-2">
-                <input
-                  id="book-search"
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Title, author, or ISBN…"
-                  className={`flex-1 ${inputCls}`}
-                />
-                <button
-                  type="submit"
-                  disabled={searching || !query.trim()}
-                  className="bg-stone-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
-                >
-                  {searching ? 'Searching…' : 'Search'}
-                </button>
+              <label htmlFor="book-search" className="text-sm font-medium text-stone-700">
+                Search for a book
+              </label>
+
+              {/* input + dropdown wrapper */}
+              <div className="relative" ref={containerRef}>
+                <div className="flex gap-2">
+                  <input
+                    id="book-search"
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={handleInputChange}
+                    onFocus={() => query.trim().length >= 2 && setDropdownDismissed(false)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Title, author, or ISBN…"
+                    autoComplete="off"
+                    className={`flex-1 ${inputCls}`}
+                  />
+                  <button
+                    type="submit"
+                    disabled={searchLoading || !query.trim()}
+                    className="bg-stone-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
+                  >
+                    {searchLoading ? 'Searching…' : 'Search'}
+                  </button>
+                </div>
+
+                {/* typeahead dropdown */}
+                {dropdownVisible && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute left-0 right-0 top-full mt-1 bg-white rounded-xl border border-stone-200 shadow-lg z-10 overflow-hidden"
+                  >
+                    {searchLoading && (
+                      <ul className="divide-y divide-stone-100">
+                        {[1, 2, 3].map((n) => (
+                          <li key={n} className="flex items-center gap-3 px-4 py-3 animate-pulse">
+                            <div className="w-9 h-12 bg-stone-100 rounded flex-shrink-0" />
+                            <div className="flex flex-col gap-2 flex-1">
+                              <div className="h-3 bg-stone-100 rounded w-3/4" />
+                              <div className="h-3 bg-stone-100 rounded w-1/2" />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {!searchLoading && searchFailed && (
+                      <p className="px-4 py-3 text-sm text-stone-500">
+                        Search failed.{' '}
+                        <button
+                          type="button"
+                          onClick={goManual}
+                          className="underline hover:text-stone-700"
+                        >
+                          Add manually
+                        </button>
+                      </p>
+                    )}
+
+                    {!searchLoading && !searchFailed && visibleResults.length === 0 && (
+                      <p className="px-4 py-3 text-sm text-stone-500">
+                        No results found.{' '}
+                        <button
+                          type="button"
+                          onClick={goManual}
+                          className="underline hover:text-stone-700"
+                        >
+                          Add manually
+                        </button>
+                      </p>
+                    )}
+
+                    {!searchLoading && !searchFailed && visibleResults.length > 0 && (
+                      <ul
+                        className="divide-y divide-stone-100 overflow-y-auto"
+                        style={{ maxHeight: '19.5rem' /* ~5 rows × 3.9rem */ }}
+                      >
+                        {visibleResults.map((r, i) => (
+                          <SearchResult
+                            key={i}
+                            result={r}
+                            isActive={i === activeIndex}
+                            onSelect={selectResult}
+                            innerRef={i === activeIndex ? activeItemRef : null}
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -286,53 +461,6 @@ export default function AddBook() {
               Add manually instead
             </button>
           </form>
-
-          {searchError && (
-            <p className="text-sm text-stone-500 px-1">
-              {searchError}{' '}
-              <button
-                onClick={goManual}
-                className="underline hover:text-stone-700 transition-colors"
-              >
-                Add manually
-              </button>
-            </p>
-          )}
-
-          {results.length > 0 && (
-            <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden">
-              {results.map((r, i) => (
-                <li key={i}>
-                  <button
-                    type="button"
-                    onClick={() => selectResult(r)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-stone-50 transition-colors text-left"
-                  >
-                    {r.cover_url ? (
-                      <img
-                        src={r.cover_url}
-                        alt={r.title}
-                        className="w-9 h-12 object-cover rounded flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-9 h-12 bg-stone-100 rounded flex-shrink-0 flex items-center justify-center text-stone-300 text-lg">
-                        ▪
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-stone-900 truncate">{r.title}</p>
-                      <p className="text-xs text-stone-500 truncate">{r.author}</p>
-                      {r.published_date && (
-                        <p className="text-xs text-stone-400">
-                          {new Date(r.published_date).getUTCFullYear()}
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       )}
 
