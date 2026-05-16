@@ -18,6 +18,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #78 Typeahead UX improvements — lite mode + full results list (merged PR #79)
 - [x] #80 Full search pagination — useInfiniteQuery + Load more (merged PR #80, Codex)
 - [x] #72 Phase 7.1 — Bulk CSV book import (merged PR #81)
+- [x] #82 Chat reading list context fix — inject read books into system prompt (PR #83 + direct commits)
 - [ ] #73 Phase 7.2 — Chat history persistence
 - [ ] #75 Phase 7.4 — Frontend redesign
 - [ ] #76 Phase 7.5 — Social friends layer
@@ -97,6 +98,12 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Chat context fixes (PRs #83 + direct commits, closes #82)
+- `app/services/chat.py`: `_format_books()` added — queries `reading_logs` joined with `books`, filtered to `status == READ` only (want-to-read excluded to avoid token bloat from large Goodreads imports), ordered by `end_date` descending. Each entry formatted as `- Title by Author (read, finished YYYY-MM-DD, rated N/5)`.
+- System prompt extended with full read-books list alongside existing aggregated stats.
+- Prompt instruction added: only recommend real, published, well-known books — never invent titles or authors.
+- `LLM_MODEL` in `.env` back on `openrouter/free` (auto-router) after `llama-3.3-70b` and `gemma-3-27b` hit free-tier rate limits.
 
 ### 2026-05-16 — Phase 7.1 — Bulk CSV book import (PR #81, closes #72)
 - `app/schemas/import_csv.py`: `ImportRowError` + `ImportSummary` Pydantic schemas.
