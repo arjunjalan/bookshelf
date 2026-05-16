@@ -91,6 +91,7 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 | `GET` | `/analytics/by-genre` | Books read per genre |
 | `GET` | `/analytics/by-author` | Books read per author |
 | `GET` | `/analytics/pace` | Days to finish per book |
+| `GET` | `/reader-profile` | Structured reader preference profile (genre/author affinity, rating distribution, pace by genre) |
 | `GET` | `/health` | Health check |
 
 Reading status values: `reading`, `read`, `want_to_read`
@@ -101,5 +102,6 @@ Reading status values: `reading`, `read`, `want_to_read`
 - [x] **Phase 2** — Frontend (React + Vite + Tailwind)
 - [x] **Phase 3** — Book metadata enrichment via Open Library API
 - [x] **Phase 4** — Reading analytics
-- [ ] **Phase 5** — ML predictions and recommendations
+- [x] **Phase 5** — Reader profile and preference signals
+- [ ] **Phase 6** — Natural language interface (OpenAI)
 - [ ] **Phase 6** — Natural language interface (OpenAI)

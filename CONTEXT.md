@@ -6,9 +6,17 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 5 — ML Predictions and Recommendations**
+**Phase 6 — Natural Language Interface**
 
-Phases 1, 2, 3, and 4 are complete and closed.
+Phases 1, 2, 3, 4, and 5 are complete and closed.
+
+---
+
+## Phase 5 — Complete
+
+- [x] #52 Phase 5.1 — Preference signals data layer (merged PR #57)
+- [x] #53 Phase 5.2 — /reader-profile API endpoint (merged PR #57)
+- [x] Epic #5 closed
 
 ---
 
@@ -66,6 +74,14 @@ Phases 1, 2, 3, and 4 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Phase 5 complete (PR #57)
+- `alembic/versions/0006_reader_profile_views.py`: three regular PostgreSQL views — `v_genre_affinity` (genre + books_read + avg_rating), `v_author_affinity` (author + books_read + avg_rating), `v_pace_by_genre` (genre + avg_days). All per-user via `user_id` in SELECT; `AVG()` returns null for genres/authors with no ratings (correct by design).
+- `app/services/reader_profile.py`: `get_reader_profile(db, user_id)` — view queries via `text()` + `.mappings().all()`; rating distribution via ORM group-by; `_to_float()` helper for Decimal coercion; returns plain dict.
+- `app/schemas/reader_profile.py`: `GenreAffinity`, `AuthorAffinity`, `PaceByGenre`, `ReaderProfile` — plain Pydantic, no `from_attributes`.
+- `app/routers/reader_profile.py`: single JWT-protected `GET /reader-profile` endpoint.
+- `app/dependencies.py`: switched from `OAuth2PasswordBearer` to `HTTPBearer` — Swagger UI was showing an OAuth2 form incompatible with our JSON login endpoint; HTTPBearer shows a plain token paste field instead.
+- Tested locally: correct response shape, null avg_rating for unrated authors, empty genre lists when genre field is unpopulated on books (data gap, not a bug).
 
 ### 2026-05-15 — Phase 4 complete (PRs #49, #50)
 - `alembic/versions/0005_analytics_views.py`: four PostgreSQL views (`v_books_per_month`, `v_reading_pace`, `v_genre_breakdown`, `v_author_breakdown`), each including `user_id` for per-user isolation. Fixed `EXTRACT(DAY FROM date_diff)` — `DATE - DATE` returns `INTEGER` in PostgreSQL, not `INTERVAL`; replaced with direct `::int` cast.
