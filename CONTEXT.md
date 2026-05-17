@@ -20,7 +20,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #72 Phase 7.1 — Bulk CSV book import (merged PR #81)
 - [x] #82 Chat reading list context fix — inject read books into system prompt (PR #83 + direct commits)
 - [x] #73 Phase 7.2 — Chat history persistence (merged PR #84)
-- [ ] #75 Phase 7.4 — Frontend redesign
+- [x] #75 Phase 7.4 — Frontend redesign (merged PR #89)
 - [ ] #76 Phase 7.5 — Social friends layer
 - [ ] Epic #71 open
 
@@ -98,6 +98,13 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Phase 7.4 — Frontend redesign (PR #89, closes #75)
+- `frontend/tailwind.config.js`: extended `fontFamily.sans` with Inter; imports `defaultTheme` from `tailwindcss/defaultTheme`.
+- `frontend/src/index.css`: Google Fonts @import for Inter 400/500/600.
+- `frontend/index.html`: page title updated to "Bookshelf".
+- New `frontend/src/components/ui/`: `Button` (primary/ghost variants, md/sm sizes), `Input`/`Textarea`/`Select` (unified indigo focus ring, forwardRef on Input), `Card` (no default padding), `Badge` (canonical STATUS_COLOR + STATUS_LABEL, replaces duplicates in BookCard and BookDetail), `ErrorBanner` (conditional render).
+- All 9 pages + 2 components updated: stone-900 primary buttons → indigo-600; focus rings → ring-indigo-500; active tab/chat-session → indigo-600/indigo-50; user chat bubble → indigo-600; chart BAR_COLOR → `#4f46e5`; nav hover/active → indigo-600 via `useLocation`; auth + 404 links → indigo-600.
 
 ### 2026-05-16 — New chat button fix (PR #86)
 - `frontend/src/pages/Chat.jsx`: `handleNewChat` was setting `activeSessionId = null`, but `effectiveSessionId` falls back to `sessions[0]?.id` when `activeSessionId` is null — so clicking "+ New chat" appeared to do nothing. Fixed by using `'new'` as a sentinel value; `effectiveSessionId` returns `null` on `'new'`, giving a genuinely blank chat state without triggering the auto-select fallback.
