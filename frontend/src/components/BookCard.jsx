@@ -1,16 +1,5 @@
 import { Link } from 'react-router-dom'
-
-const STATUS_LABEL = {
-  reading: 'Reading',
-  read: 'Read',
-  want_to_read: 'Want to Read',
-}
-
-const STATUS_COLOR = {
-  reading: 'bg-blue-50 text-blue-700',
-  read: 'bg-green-50 text-green-700',
-  want_to_read: 'bg-amber-50 text-amber-700',
-}
+import Badge from './ui/Badge'
 
 function Stars({ rating }) {
   if (!rating) return null
@@ -48,11 +37,7 @@ export default function BookCard({ log }) {
         <p className="font-medium text-stone-900 truncate text-sm">{book.title}</p>
         <p className="text-xs text-stone-500 truncate">{book.author}</p>
         <div className="flex items-center gap-2">
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[status]}`}
-          >
-            {STATUS_LABEL[status]}
-          </span>
+          <Badge status={status} />
           <Stars rating={rating} />
         </div>
       </div>

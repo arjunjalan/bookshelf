@@ -38,7 +38,7 @@ export default function Books() {
         <h2 className="text-xl font-semibold text-stone-900">My Shelf</h2>
         <Link
           to="/books/add"
-          className="text-sm bg-stone-900 text-white px-4 py-2 rounded-lg hover:bg-stone-700 transition-colors"
+          className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
         >
           + Add book
         </Link>
@@ -51,7 +51,7 @@ export default function Books() {
             onClick={() => setActiveTab(tab.value)}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
               activeTab === tab.value
-                ? 'border-stone-900 text-stone-900'
+                ? 'border-indigo-600 text-indigo-600'
                 : 'border-transparent text-stone-500 hover:text-stone-700'
             }`}
           >
@@ -78,7 +78,7 @@ export default function Books() {
           <p className="text-sm">Nothing here yet — add your first book</p>
           <Link
             to="/books/add"
-            className="mt-4 inline-block text-sm text-stone-900 font-medium hover:underline"
+            className="mt-4 inline-block text-sm text-indigo-600 font-medium hover:text-indigo-700"
           >
             Add a book
           </Link>

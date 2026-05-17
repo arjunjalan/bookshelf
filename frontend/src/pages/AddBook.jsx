@@ -49,7 +49,7 @@ function LogSection({ form, setForm }) {
           required
           value={form.status}
           onChange={set('status')}
-          className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 bg-white"
+          className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
         >
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -66,7 +66,7 @@ function LogSection({ form, setForm }) {
             type="date"
             value={form.start_date}
             onChange={set('start_date')}
-            className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
+            className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
           />
         </div>
 
@@ -78,7 +78,7 @@ function LogSection({ form, setForm }) {
               value={form.end_date}
               onChange={set('end_date')}
               min={form.start_date || undefined}
-              className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
+              className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
             />
           </div>
         )}
@@ -373,7 +373,7 @@ export default function AddBook() {
   }
 
   const inputCls =
-    'border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300'
+    'border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors'
 
   const dropdownVisible = !dropdownDismissed && !showFullResults && query.trim().length >= 2 && debouncedQuery.trim().length >= 2
 
@@ -419,7 +419,7 @@ export default function AddBook() {
                   <button
                     type="submit"
                     disabled={fullFetching || !query.trim()}
-                    className="bg-stone-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
+                    className="bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                   >
                     {fullFetching && !isFetchingNextPage ? 'Searching…' : 'Search'}
                   </button>
@@ -518,7 +518,7 @@ export default function AddBook() {
                     type="button"
                     onClick={() => fetchNextPage()}
                     disabled={isFetchingNextPage}
-                    className="flex-shrink-0 border border-stone-200 bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-colors"
+                    className="flex-shrink-0 border border-stone-200 bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 hover:border-indigo-400 disabled:opacity-50 transition-colors"
                   >
                     {isFetchingNextPage ? 'Loading…' : 'Load more'}
                   </button>
@@ -690,7 +690,7 @@ export default function AddBook() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-stone-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
+            className="bg-indigo-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
           >
             {loading ? 'Adding…' : 'Add book'}
           </button>

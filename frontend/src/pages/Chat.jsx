@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import client, { clearAuthAndRedirect } from '../api/client'
+import Button from '../components/ui/Button'
+import ErrorBanner from '../components/ui/ErrorBanner'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -173,12 +175,9 @@ export default function Chat() {
       {/* Sidebar */}
       <aside className="w-52 shrink-0 border-r border-stone-200 bg-white flex flex-col overflow-hidden">
         <div className="p-3 border-b border-stone-100">
-          <button
-            onClick={handleNewChat}
-            className="w-full text-sm bg-stone-900 text-white rounded-lg px-3 py-2 hover:bg-stone-700 transition-colors"
-          >
+          <Button onClick={handleNewChat} className="w-full text-sm px-3 py-2">
             + New chat
-          </button>
+          </Button>
         </div>
         <ul className="flex-1 overflow-y-auto py-1">
           {sessions.map((s) => (
@@ -187,7 +186,7 @@ export default function Chat() {
                 onClick={() => handleSelectSession(s.id)}
                 className={`w-full text-left px-3 py-2.5 transition-colors ${
                   s.id === effectiveSessionId
-                    ? 'bg-stone-100 text-stone-900'
+                    ? 'bg-indigo-50 text-indigo-700'
                     : 'text-stone-600 hover:bg-stone-50'
                 }`}
               >
@@ -236,7 +235,7 @@ export default function Chat() {
           {displayMessages.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {m.role === 'user' ? (
-                <p className="px-4 py-2 rounded-xl rounded-br-sm text-sm max-w-[80%] whitespace-pre-wrap leading-relaxed bg-stone-900 text-white">
+                <p className="px-4 py-2 rounded-xl rounded-br-sm text-sm max-w-[80%] whitespace-pre-wrap leading-relaxed bg-indigo-600 text-white">
                   {m.content}
                 </p>
               ) : (
@@ -265,11 +264,7 @@ export default function Chat() {
           <div ref={bottomRef} />
         </div>
 
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-            {error}
-          </p>
-        )}
+        <ErrorBanner message={error} />
 
         <div className="flex gap-2 items-end">
           <textarea
@@ -283,16 +278,15 @@ export default function Chat() {
             }}
             rows={2}
             placeholder="Ask about your reading…"
-            className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none"
+            className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
           />
-          <button
+          <Button
             type="button"
             onClick={() => sendMessage(input.trim())}
             disabled={isStreaming || !input.trim()}
-            className="bg-stone-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
           >
             {isStreaming ? 'Sending…' : 'Send'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

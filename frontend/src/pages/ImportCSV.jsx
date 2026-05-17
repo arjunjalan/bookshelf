@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import client from '../api/client'
+import Button from '../components/ui/Button'
+import Card from '../components/ui/Card'
+import ErrorBanner from '../components/ui/ErrorBanner'
 
 function SummaryReport({ summary }) {
   const { imported, skipped, errors } = summary
@@ -90,13 +93,13 @@ export default function ImportCSV() {
         Export your library from Goodreads (My Books → Import/Export → Export Library), then upload the CSV file here.
       </p>
 
-      <div className="bg-white rounded-xl border border-stone-200 p-6 flex flex-col gap-5">
+      <Card className="p-6 flex flex-col gap-5">
 
         {/* file picker */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-stone-700">Goodreads export file</label>
           <div
-            className="border-2 border-dashed border-stone-200 rounded-xl p-6 flex flex-col items-center gap-2 cursor-pointer hover:border-stone-300 transition-colors"
+            className="border-2 border-dashed border-stone-200 rounded-xl p-6 flex flex-col items-center gap-2 cursor-pointer hover:border-indigo-400 transition-colors"
             onClick={() => fileInputRef.current?.click()}
           >
             <svg className="w-8 h-8 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,32 +122,24 @@ export default function ImportCSV() {
         </div>
 
         {/* error banner */}
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-            {errorMessage}
-          </p>
-        )}
+        <ErrorBanner message={error ? errorMessage : ''} />
 
         {/* action buttons */}
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={handleImport}
             disabled={!selectedFile || isPending}
-            className="flex-1 bg-stone-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
+            className="flex-1 py-2.5"
           >
             {isPending ? 'Importing…' : 'Import'}
-          </button>
+          </Button>
           {(selectedFile || summary) && (
-            <button
-              onClick={handleReset}
-              disabled={isPending}
-              className="border border-stone-200 text-stone-700 rounded-lg px-4 py-2.5 text-sm hover:bg-stone-50 transition-colors disabled:opacity-50"
-            >
+            <Button variant="ghost" onClick={handleReset} disabled={isPending} className="py-2.5">
               Reset
-            </button>
+            </Button>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* summary report */}
       {summary && (
@@ -155,7 +150,7 @@ export default function ImportCSV() {
 
       {/* instructions */}
       {!summary && (
-        <div className="mt-6 bg-white rounded-xl border border-stone-200 p-5">
+        <Card className="mt-6 p-5">
           <p className="text-xs font-medium text-stone-500 mb-3">How to export from Goodreads</p>
           <ol className="flex flex-col gap-2">
             {[
@@ -173,7 +168,7 @@ export default function ImportCSV() {
               </li>
             ))}
           </ol>
-        </div>
+        </Card>
       )}
     </div>
   )
