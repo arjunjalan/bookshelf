@@ -111,7 +111,11 @@ Do not strip these to simplify early phases. Historical records cannot be recons
    ```
 2. Do all edits inside that worktree directory.
 3. Commit there, push the branch, open a PR — then merge to `main`.
-4. Remove the worktree when done:
+4. After the PR merges, immediately fast-forward the local main worktree:
+   ```bash
+   cd /home/aj/projects/bookshelf && git pull --ff-only
+   ```
+5. Remove the worktree when done:
    ```bash
    git worktree remove ../bookshelf-<feature>
    ```
