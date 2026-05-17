@@ -141,7 +141,7 @@ export default function BookDetail() {
 
       <div className="mt-6 flex gap-5">
         {(() => {
-          const coverSrc = book.cover_url || (book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg` : null)
+          const coverSrc = book.cover_url || (book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg?default=false` : null)
           return coverSrc ? (
             <img
               src={coverSrc}
