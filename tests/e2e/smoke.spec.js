@@ -82,13 +82,11 @@ test.describe('Add book', () => {
     await page.getByRole('button', { name: 'Search' }).click()
 
     await expect(page.getByText('Frank Herbert').first()).toBeVisible()
-    await page.getByText('Frank Herbert').first().click()
-
-    await expect(page.getByLabel('Title')).toHaveValue('Dune')
-    await expect(page.getByLabel('Author')).toHaveValue('Frank Herbert')
-
-    await page.getByLabel('Status').selectOption('read')
-    await page.getByRole('button', { name: 'Add book' }).click()
+    await page
+      .locator('li')
+      .filter({ hasText: 'Frank Herbert' })
+      .getByRole('button', { name: 'Read', exact: true })
+      .click()
 
     await expect(page).toHaveURL(/\/books\/[0-9a-f-]+$/)
     await expect(page.getByRole('heading', { name: 'Dune' })).toBeVisible()
@@ -155,9 +153,14 @@ test.describe('Add book', () => {
     await expect(page.getByText('Showing 30 of 30 results for "Search"')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Load more' })).not.toBeVisible()
 
-    await page.getByText('Search Author 30').click()
-    await expect(page.getByLabel('Title')).toHaveValue('Search Book 30')
-    await expect(page.getByLabel('Author')).toHaveValue('Search Author 30')
+    await page
+      .locator('li')
+      .filter({ hasText: 'Search Author 30' })
+      .getByRole('button', { name: 'Want to Read' })
+      .click()
+
+    await expect(page).toHaveURL(/\/books\/[0-9a-f-]+$/)
+    await expect(page.getByRole('heading', { name: 'Search Book 30' })).toBeVisible()
   })
 })
 
