@@ -12,6 +12,12 @@ const STATUS_OPTIONS = [
   { label: 'Want to Read', value: 'want_to_read' },
 ]
 
+const QUICK_ADD_STATUS_OPTIONS = [
+  { label: 'Want to Read', value: 'want_to_read' },
+  { label: 'Reading', value: 'reading' },
+  { label: 'Read', value: 'read' },
+]
+
 const EMPTY_LOG = {
   status: 'reading',
   start_date: '',
@@ -127,37 +133,98 @@ function LogSection({ form, setForm }) {
   )
 }
 
-function SearchResult({ result, isActive, onSelect, innerRef }) {
+function resultKey(result, index) {
+  return [result.isbn, result.title, result.author, result.published_date, index]
+    .filter(Boolean)
+    .join('|')
+}
+
+function resultToBookPayload(result) {
+  return {
+    title: result.title?.trim() ?? '',
+    author: result.author?.trim() ?? '',
+    ...(result.isbn && { isbn: result.isbn.trim() }),
+    ...(result.cover_url && { cover_url: result.cover_url.trim() }),
+    ...(result.description && { description: result.description.trim() }),
+    ...(result.page_count != null && { page_count: Number(result.page_count) }),
+    ...(result.published_date && { published_date: result.published_date }),
+  }
+}
+
+function friendlyAddError(err) {
+  const detail = err.response?.data?.detail
+  if (err.response?.status === 409) {
+    return detail || 'This book is already on your shelf.'
+  }
+  if (Array.isArray(detail)) {
+    return detail.map((item) => item.msg).join(', ')
+  }
+  return detail || 'Could not add this book. Try another shelf or add it manually.'
+}
+
+function SearchResult({
+  result,
+  isActive,
+  onQuickAdd,
+  addingStatus,
+  disabled,
+  error,
+  innerRef,
+}) {
+  const title = result.title || 'Untitled'
+  const author = result.author || 'Unknown author'
+
   return (
     <li ref={innerRef}>
-      <button
-        type="button"
-        onMouseDown={(e) => { e.preventDefault(); onSelect(result) }}
-        className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${
+      <div
+        className={`w-full flex flex-col gap-3 px-4 py-3 transition-colors ${
           isActive ? 'bg-stone-100' : 'hover:bg-stone-50'
         }`}
       >
-        {result.cover_url ? (
-          <img
-            src={result.cover_url}
-            alt={result.title}
-            className="w-9 h-12 object-cover rounded flex-shrink-0"
-          />
-        ) : (
-          <div className="w-9 h-12 bg-stone-100 rounded flex-shrink-0 flex items-center justify-center text-stone-300 text-lg">
-            ▪
-          </div>
-        )}
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-stone-900 truncate">{result.title}</p>
-          <p className="text-xs text-stone-500 truncate">{result.author}</p>
-          {result.published_date && (
-            <p className="text-xs text-stone-400">
-              {new Date(result.published_date).getUTCFullYear()}
-            </p>
+        <div className="flex items-center gap-3">
+          {result.cover_url ? (
+            <img
+              src={result.cover_url}
+              alt={title}
+              className="w-9 h-12 object-cover rounded flex-shrink-0"
+            />
+          ) : (
+            <div className="w-9 h-12 bg-stone-100 rounded flex-shrink-0 flex items-center justify-center text-stone-300 text-lg">
+              ▪
+            </div>
           )}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-stone-900 truncate">{title}</p>
+            <p className="text-xs text-stone-500 truncate">{author}</p>
+            {result.published_date && (
+              <p className="text-xs text-stone-400">
+                {new Date(result.published_date).getUTCFullYear()}
+              </p>
+            )}
+          </div>
         </div>
-      </button>
+
+        <div className="flex flex-wrap gap-2 pl-12">
+          {QUICK_ADD_STATUS_OPTIONS.map((status) => (
+            <button
+              key={status.value}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => onQuickAdd(result, status.value)}
+              disabled={disabled}
+              className="border border-stone-200 bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 hover:border-indigo-400 disabled:opacity-50 disabled:hover:border-stone-200 transition-colors"
+            >
+              {addingStatus === status.value ? 'Adding...' : status.label}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <p className="ml-12 text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+      </div>
     </li>
   )
 }
@@ -166,7 +233,7 @@ export default function AddBook() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  // mode: 'search' | 'confirm' | 'manual'
+  // mode: 'search' | 'manual'
   const [mode, setMode] = useState('search')
 
   // search state
@@ -186,6 +253,8 @@ export default function AddBook() {
   const [bookForm, setBookForm] = useState(EMPTY_MANUAL)
   const [logForm, setLogForm] = useState(EMPTY_LOG)
   const [submitError, setSubmitError] = useState('')
+  const [quickAddErrorByResult, setQuickAddErrorByResult] = useState({})
+  const [quickAddLoading, setQuickAddLoading] = useState(null)
   const [loading, setLoading] = useState(false)
 
   // typeahead: lite=true skips description fetching for fast results
@@ -269,6 +338,7 @@ export default function AddBook() {
     setFullSearchQuery('')
     setDropdownDismissed(false)
     setActiveIndex(-1)
+    setQuickAddErrorByResult({})
   }
 
   function handleKeyDown(e) {
@@ -279,32 +349,11 @@ export default function AddBook() {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       setActiveIndex((i) => Math.max(i - 1, -1))
-    } else if (e.key === 'Enter' && activeIndex >= 0) {
-      e.preventDefault()
-      selectResult(visibleResults[activeIndex])
     } else if (e.key === 'Escape') {
       setDropdownDismissed(true)
       setActiveIndex(-1)
       inputRef.current?.focus()
     }
-  }
-
-  function selectResult(result) {
-    setBookForm({
-      title: result.title ?? '',
-      author: result.author ?? '',
-      genre: '',
-      isbn: result.isbn ?? '',
-      cover_url: result.cover_url ?? '',
-      description: result.description ?? '',
-      page_count: result.page_count != null ? String(result.page_count) : '',
-      published_date: result.published_date ?? '',
-    })
-    setDropdownDismissed(true)
-    setFullSearchQuery('')
-    setActiveIndex(-1)
-    setSubmitError('')
-    setMode('confirm')
   }
 
   function goManual() {
@@ -313,6 +362,38 @@ export default function AddBook() {
     setDropdownDismissed(true)
     setFullSearchQuery('')
     setMode('manual')
+  }
+
+  async function handleQuickAdd(result, status, key) {
+    if (quickAddLoading) return
+    const bookPayload = resultToBookPayload(result)
+    if (!bookPayload.title || !bookPayload.author) {
+      setQuickAddErrorByResult((errors) => ({
+        ...errors,
+        [key]: 'This result is missing a title or author. Add it manually to finish the details.',
+      }))
+      return
+    }
+
+    setQuickAddErrorByResult((errors) => ({ ...errors, [key]: '' }))
+    setQuickAddLoading({ key, status })
+
+    try {
+      const { data: book } = await client.post('/books', bookPayload)
+      await client.post('/reading-logs', { book_id: book.id, status })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['reading-logs'] }),
+        queryClient.invalidateQueries({ queryKey: ['analytics'] }),
+      ])
+      navigate(`/books/${book.id}`)
+    } catch (err) {
+      setQuickAddErrorByResult((errors) => ({
+        ...errors,
+        [key]: friendlyAddError(err),
+      }))
+    } finally {
+      setQuickAddLoading(null)
+    }
   }
 
   function validate() {
@@ -359,7 +440,10 @@ export default function AddBook() {
       }
       await client.post('/reading-logs', logPayload)
 
-      queryClient.invalidateQueries({ queryKey: ['reading-logs'] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['reading-logs'] }),
+        queryClient.invalidateQueries({ queryKey: ['analytics'] }),
+      ])
       navigate(`/books/${book.id}`)
     } catch (err) {
       setSubmitError(err.response?.data?.detail || 'Failed to add book')
@@ -477,13 +561,21 @@ export default function AddBook() {
                         style={{ maxHeight: '19.5rem' /* ~5 rows × 3.9rem */ }}
                       >
                         {visibleResults.map((r, i) => (
-                          <SearchResult
-                            key={i}
-                            result={r}
-                            isActive={i === activeIndex}
-                            onSelect={selectResult}
-                            innerRef={i === activeIndex ? activeItemRef : null}
-                          />
+                          (() => {
+                            const key = resultKey(r, i)
+                            return (
+                              <SearchResult
+                                key={key}
+                                result={r}
+                                isActive={i === activeIndex}
+                                onQuickAdd={(result, status) => handleQuickAdd(result, status, key)}
+                                addingStatus={quickAddLoading?.key === key ? quickAddLoading.status : null}
+                                disabled={Boolean(quickAddLoading)}
+                                error={quickAddErrorByResult[key]}
+                                innerRef={i === activeIndex ? activeItemRef : null}
+                              />
+                            )
+                          })()
                         ))}
                       </ul>
                     )}
@@ -559,9 +651,21 @@ export default function AddBook() {
 
               {!fullLoading && !fullFailed && fullResults.length > 0 && (
                 <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden overflow-y-auto" style={{ maxHeight: '30rem' }}>
-                  {fullResults.map((r, i) => (
-                    <SearchResult key={`${r.title}-${r.author}-${r.isbn ?? i}`} result={r} isActive={false} onSelect={selectResult} innerRef={null} />
-                  ))}
+                  {fullResults.map((r, i) => {
+                    const key = resultKey(r, i)
+                    return (
+                      <SearchResult
+                        key={key}
+                        result={r}
+                        isActive={false}
+                        onQuickAdd={(result, status) => handleQuickAdd(result, status, key)}
+                        addingStatus={quickAddLoading?.key === key ? quickAddLoading.status : null}
+                        disabled={Boolean(quickAddLoading)}
+                        error={quickAddErrorByResult[key]}
+                        innerRef={null}
+                      />
+                    )
+                  })}
                 </ul>
               )}
             </div>
@@ -569,21 +673,19 @@ export default function AddBook() {
         </div>
       )}
 
-      {/* ── Confirm / Manual mode ── */}
-      {(mode === 'confirm' || mode === 'manual') && (
+      {/* ── Manual mode ── */}
+      {mode === 'manual' && (
         <form
           onSubmit={handleSubmit}
           className="bg-white rounded-xl border border-stone-200 p-6 flex flex-col gap-5"
         >
-          {mode === 'confirm' && (
-            <button
-              type="button"
-              onClick={() => setMode('search')}
-              className="text-xs text-stone-400 hover:text-stone-600 transition-colors text-left -mb-1"
-            >
-              ← Back to search
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setMode('search')}
+            className="text-xs text-stone-400 hover:text-stone-600 transition-colors text-left -mb-1"
+          >
+            ← Back to search
+          </button>
 
           {submitError && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
