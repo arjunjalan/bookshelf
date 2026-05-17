@@ -140,17 +140,23 @@ export default function BookDetail() {
       </Link>
 
       <div className="mt-6 flex gap-5">
-        {book.cover_url ? (
-          <img
-            src={book.cover_url}
-            alt={book.title}
-            className="w-20 h-28 object-cover rounded-lg flex-shrink-0 shadow-sm"
-          />
-        ) : (
-          <div className="w-20 h-28 bg-stone-100 rounded-lg flex-shrink-0 flex items-center justify-center text-stone-300 text-3xl">
-            ▪
-          </div>
-        )}
+        {(() => {
+          const coverSrc = book.cover_url || (book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg` : null)
+          return coverSrc ? (
+            <img
+              src={coverSrc}
+              alt={book.title}
+              className="w-20 h-28 object-cover rounded-lg flex-shrink-0 shadow-sm"
+              onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+            />
+          ) : null
+        })()}
+        <div
+          className="w-20 h-28 bg-stone-100 rounded-lg flex-shrink-0 items-center justify-center text-stone-300 text-3xl"
+          style={{ display: (book.cover_url || book.isbn) ? 'none' : 'flex' }}
+        >
+          ▪
+        </div>
         <div className="flex flex-col justify-center gap-1">
           <h1 className="text-xl font-semibold text-stone-900">{book.title}</h1>
           <p className="text-stone-500 text-sm">{book.author}</p>
