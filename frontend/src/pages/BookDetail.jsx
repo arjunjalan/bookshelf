@@ -96,10 +96,17 @@ export default function BookDetail() {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(null)
   const [saveError, setSaveError] = useState('')
+  const [metadataPollStartedAt] = useState(() => Date.now())
 
   const { data: book, isLoading: bookLoading, isError: bookError } = useQuery({
     queryKey: ['book', id],
     queryFn: () => client.get(`/books/${id}`).then((r) => r.data),
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (!data) return false
+      if (Date.now() - metadataPollStartedAt > 30_000) return false
+      return data.cover_url && data.description ? false : 2000
+    },
     retry: false,
   })
 

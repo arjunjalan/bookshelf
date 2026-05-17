@@ -9,8 +9,18 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.services.metadata_enrichment import get_metadata_enrichment_scheduler
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def disable_metadata_enrichment():
+    app.dependency_overrides[get_metadata_enrichment_scheduler] = lambda: (
+        lambda background_tasks, user_id, book_id: None
+    )
+    yield
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture(scope="module")

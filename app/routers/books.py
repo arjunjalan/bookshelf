@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -10,6 +10,10 @@ from app.dependencies import get_current_user
 from app.models.book import Book
 from app.models.user import User
 from app.schemas.book import BookCreate, BookRead, BookUpdate
+from app.services.metadata_enrichment import (
+    MetadataEnrichmentScheduler,
+    get_metadata_enrichment_scheduler,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/books", tags=["books"])
@@ -18,8 +22,12 @@ router = APIRouter(prefix="/books", tags=["books"])
 @router.post("", response_model=BookRead, status_code=status.HTTP_201_CREATED)
 def create_book(
     body: BookCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    schedule_metadata_enrichment: MetadataEnrichmentScheduler = Depends(
+        get_metadata_enrichment_scheduler
+    ),
 ):
     book = Book(**body.model_dump(), user_id=current_user.id)
     db.add(book)
@@ -29,6 +37,7 @@ def create_book(
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A book with this ISBN already exists")
     db.refresh(book)
+    schedule_metadata_enrichment(background_tasks, current_user.id, book.id)
     logger.info("Created book %s", book.id)
     return BookRead.model_validate(book)
 
