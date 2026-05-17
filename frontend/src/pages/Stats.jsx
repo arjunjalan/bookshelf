@@ -170,27 +170,31 @@ export default function Stats() {
           <ChartEmpty message="No finished books yet — mark some books as read to see your reading history" />
         )}
         {!overTimeLoading && !overTimeError && overTimeData.length > 0 && (
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart
-              data={overTimeData}
-              margin={{ top: 4, right: 0, left: -20, bottom: 0 }}
-            >
-              <XAxis
-                dataKey="monthLabel"
-                tick={{ fontSize: 11, fill: '#a8a29e' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fontSize: 11, fill: '#a8a29e' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
-              <Bar dataKey="books_finished" radius={[4, 4, 0, 0]} fill={BAR_COLOR} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="overflow-x-auto">
+            <div style={{ minWidth: Math.max(320, overTimeData.length * 40) }}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={overTimeData}
+                  margin={{ top: 4, right: 0, left: -20, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="monthLabel"
+                    tick={{ fontSize: 11, fill: '#a8a29e' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: '#a8a29e' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                  <Bar dataKey="books_finished" radius={[4, 4, 0, 0]} fill={BAR_COLOR} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         )}
       </SectionCard>
 
@@ -202,34 +206,38 @@ export default function Stats() {
           <ChartEmpty message="No genre data yet — add genres to your books to see a breakdown" />
         )}
         {!byGenreLoading && !byGenreError && (byGenre ?? []).length > 0 && (
-          <ResponsiveContainer
-            width="100%"
-            height={Math.max(180, byGenre.length * 36)}
-          >
-            <BarChart
-              data={byGenre}
-              layout="vertical"
-              margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
-            >
-              <XAxis
-                type="number"
-                allowDecimals={false}
-                tick={{ fontSize: 11, fill: '#a8a29e' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                type="category"
-                dataKey="genre"
-                width={96}
-                tick={{ fontSize: 11, fill: '#78716c' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
-              <Bar dataKey="books_read" radius={[0, 4, 4, 0]} fill={BAR_COLOR} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="overflow-x-auto">
+            <div style={{ minWidth: 300 }}>
+              <ResponsiveContainer
+                width="100%"
+                height={Math.max(180, byGenre.length * 36)}
+              >
+                <BarChart
+                  data={byGenre}
+                  layout="vertical"
+                  margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
+                >
+                  <XAxis
+                    type="number"
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: '#a8a29e' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="genre"
+                    width={96}
+                    tick={{ fontSize: 11, fill: '#78716c' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                  <Bar dataKey="books_read" radius={[0, 4, 4, 0]} fill={BAR_COLOR} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         )}
       </SectionCard>
 
@@ -241,34 +249,38 @@ export default function Stats() {
           <ChartEmpty message="No finished books yet — finish some books to see author stats" />
         )}
         {!byAuthorLoading && !byAuthorError && (byAuthor ?? []).length > 0 && (
-          <ResponsiveContainer
-            width="100%"
-            height={Math.max(180, byAuthor.length * 36)}
-          >
-            <BarChart
-              data={byAuthor}
-              layout="vertical"
-              margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
-            >
-              <XAxis
-                type="number"
-                allowDecimals={false}
-                tick={{ fontSize: 11, fill: '#a8a29e' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                type="category"
-                dataKey="author"
-                width={120}
-                tick={{ fontSize: 11, fill: '#78716c' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
-              <Bar dataKey="books_read" radius={[0, 4, 4, 0]} fill={BAR_COLOR} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="overflow-x-auto">
+            <div style={{ minWidth: 320 }}>
+              <ResponsiveContainer
+                width="100%"
+                height={Math.max(180, byAuthor.length * 36)}
+              >
+                <BarChart
+                  data={byAuthor}
+                  layout="vertical"
+                  margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
+                >
+                  <XAxis
+                    type="number"
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: '#a8a29e' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="author"
+                    width={120}
+                    tick={{ fontSize: 11, fill: '#78716c' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                  <Bar dataKey="books_read" radius={[0, 4, 4, 0]} fill={BAR_COLOR} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         )}
       </SectionCard>
 
@@ -280,34 +292,38 @@ export default function Stats() {
           <ChartEmpty message="No pace data yet — books need both a start and end date to appear here" />
         )}
         {!paceLoading && !paceError && (pace ?? []).length > 0 && (
-          <ResponsiveContainer
-            width="100%"
-            height={Math.max(180, pace.length * 36)}
-          >
-            <BarChart
-              data={pace}
-              layout="vertical"
-              margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
-            >
-              <XAxis
-                type="number"
-                allowDecimals={false}
-                tick={{ fontSize: 11, fill: '#a8a29e' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                type="category"
-                dataKey="title"
-                width={140}
-                tick={{ fontSize: 11, fill: '#78716c' }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
-              <Bar dataKey="days_to_finish" radius={[0, 4, 4, 0]} fill={BAR_COLOR_MUTED} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="overflow-x-auto">
+            <div style={{ minWidth: 360 }}>
+              <ResponsiveContainer
+                width="100%"
+                height={Math.max(180, pace.length * 36)}
+              >
+                <BarChart
+                  data={pace}
+                  layout="vertical"
+                  margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
+                >
+                  <XAxis
+                    type="number"
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: '#a8a29e' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="title"
+                    width={140}
+                    tick={{ fontSize: 11, fill: '#78716c' }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip content={<StoneTooltip />} cursor={{ fill: '#f5f5f4' }} />
+                  <Bar dataKey="days_to_finish" radius={[0, 4, 4, 0]} fill={BAR_COLOR_MUTED} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         )}
       </SectionCard>
     </div>

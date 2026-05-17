@@ -55,7 +55,7 @@ function LogSection({ form, setForm }) {
           required
           value={form.status}
           onChange={set('status')}
-          className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
+          className="border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
         >
           {STATUS_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -65,14 +65,14 @@ function LogSection({ form, setForm }) {
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-stone-700">Start date</label>
           <input
             type="date"
             value={form.start_date}
             onChange={set('start_date')}
-            className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+            className="border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
           />
         </div>
 
@@ -84,7 +84,7 @@ function LogSection({ form, setForm }) {
               value={form.end_date}
               onChange={set('end_date')}
               min={form.start_date || undefined}
-              className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
             />
           </div>
         )}
@@ -99,7 +99,7 @@ function LogSection({ form, setForm }) {
                 key={n}
                 type="button"
                 onClick={() => setForm((f) => ({ ...f, rating: String(n) }))}
-                className={`text-2xl transition-colors ${
+                className={`p-2 inline-flex text-2xl transition-colors ${
                   Number(form.rating) >= n ? 'text-amber-400' : 'text-stone-200 hover:text-amber-200'
                 }`}
               >
@@ -126,7 +126,7 @@ function LogSection({ form, setForm }) {
           value={form.notes}
           onChange={set('notes')}
           rows={3}
-          className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none"
+          className="border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none"
         />
       </div>
     </div>
@@ -212,7 +212,7 @@ function SearchResult({
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => onQuickAdd(result, status.value)}
               disabled={disabled}
-              className="border border-stone-200 bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 hover:border-indigo-400 disabled:opacity-50 disabled:hover:border-stone-200 transition-colors"
+              className="border border-stone-200 bg-white rounded-lg px-3 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-50 hover:border-indigo-400 disabled:opacity-50 disabled:hover:border-stone-200 transition-colors"
             >
               {addingStatus === status.value ? 'Adding...' : status.label}
             </button>
@@ -457,7 +457,7 @@ export default function AddBook() {
   }
 
   const inputCls =
-    'border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors'
+    'border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors'
 
   const dropdownVisible = !dropdownDismissed && !showFullResults && query.trim().length >= 2 && debouncedQuery.trim().length >= 2
 
@@ -466,7 +466,7 @@ export default function AddBook() {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="text-stone-400 hover:text-stone-700 transition-colors"
+          className="py-2 pr-2 inline-block text-stone-400 hover:text-stone-700 transition-colors"
         >
           ← Back
         </button>
@@ -558,7 +558,7 @@ export default function AddBook() {
                     {!searchLoading && !searchFailed && visibleResults.length > 0 && (
                       <ul
                         className="divide-y divide-stone-100 overflow-y-auto"
-                        style={{ maxHeight: '19.5rem' /* ~5 rows × 3.9rem */ }}
+                        style={{ maxHeight: '50vh' }}
                       >
                         {visibleResults.map((r, i) => (
                           (() => {
@@ -587,7 +587,7 @@ export default function AddBook() {
             <button
               type="button"
               onClick={goManual}
-              className="text-xs text-stone-400 hover:text-stone-600 transition-colors text-left"
+              className="py-2 block text-xs text-stone-400 hover:text-stone-600 transition-colors text-left"
             >
               Add manually instead
             </button>
@@ -650,7 +650,7 @@ export default function AddBook() {
               )}
 
               {!fullLoading && !fullFailed && fullResults.length > 0 && (
-                <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden overflow-y-auto" style={{ maxHeight: '30rem' }}>
+                <ul className="bg-white rounded-xl border border-stone-200 divide-y divide-stone-100 overflow-hidden overflow-y-auto" style={{ maxHeight: '60vh' }}>
                   {fullResults.map((r, i) => {
                     const key = resultKey(r, i)
                     return (
@@ -682,7 +682,7 @@ export default function AddBook() {
           <button
             type="button"
             onClick={() => setMode('search')}
-            className="text-xs text-stone-400 hover:text-stone-600 transition-colors text-left -mb-1"
+            className="py-2 inline-block text-xs text-stone-400 hover:text-stone-600 transition-colors text-left -mb-1"
           >
             ← Back to search
           </button>
@@ -693,8 +693,8 @@ export default function AddBook() {
             </p>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 flex flex-col gap-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="col-span-full flex flex-col gap-1.5">
               <label htmlFor="book-title" className="text-sm font-medium text-stone-700">
                 Title <span className="text-red-400">*</span>
               </label>
@@ -708,7 +708,7 @@ export default function AddBook() {
               />
             </div>
 
-            <div className="col-span-2 flex flex-col gap-1.5">
+            <div className="col-span-full flex flex-col gap-1.5">
               <label htmlFor="book-author" className="text-sm font-medium text-stone-700">
                 Author <span className="text-red-400">*</span>
               </label>
@@ -742,7 +742,7 @@ export default function AddBook() {
               />
             </div>
 
-            <div className="col-span-2 flex flex-col gap-1.5">
+            <div className="col-span-full flex flex-col gap-1.5">
               <label className="text-sm font-medium text-stone-700">Cover URL</label>
               <input
                 type="url"
@@ -774,7 +774,7 @@ export default function AddBook() {
               />
             </div>
 
-            <div className="col-span-2 flex flex-col gap-1.5">
+            <div className="col-span-full flex flex-col gap-1.5">
               <label className="text-sm font-medium text-stone-700">Description</label>
               <textarea
                 value={bookForm.description}

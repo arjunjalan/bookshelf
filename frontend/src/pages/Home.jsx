@@ -130,7 +130,7 @@ export default function Home() {
     return (
       <div className="flex flex-col gap-6 animate-pulse">
         <div className="h-7 bg-stone-100 rounded w-48" />
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="h-20 bg-stone-100 rounded-xl" />
           <div className="h-20 bg-stone-100 rounded-xl" />
           <div className="h-20 bg-stone-100 rounded-xl" />
@@ -177,7 +177,7 @@ export default function Home() {
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatTile label={`Books in ${currentYear}`} value={booksThisYear || '—'} />
         <StatTile label="Top genre" value={topGenre} />
         <StatTile label="Favourite author" value={topAuthor} />
@@ -195,7 +195,7 @@ export default function Home() {
                 navigate('/chat', { state: { message: e.target.value.trim() } })
               }
             }}
-            className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+            className="flex-1 border border-stone-200 rounded-lg px-3 py-2.5 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
           />
           <Button
             onClick={(e) => {
@@ -212,7 +212,7 @@ export default function Home() {
             <button
               key={s}
               onClick={() => navigate('/chat', { state: { message: s } })}
-              className="text-xs text-stone-600 border border-stone-200 rounded-full px-3 py-1 hover:bg-stone-50 hover:border-indigo-300 transition-colors"
+              className="text-xs text-stone-600 border border-stone-200 rounded-full px-3 py-2.5 hover:bg-stone-50 hover:border-indigo-300 active:bg-stone-100 transition-colors min-h-[44px] inline-flex items-center"
             >
               {s}
             </button>
@@ -224,7 +224,7 @@ export default function Home() {
       {recentlyFinished.length > 0 && (
         <div className="flex flex-col gap-3">
           <p className="text-xs font-medium text-stone-400 uppercase tracking-wide">Recently finished</p>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {recentlyFinished.map((log) => (
               <Link
                 key={log.id}

@@ -22,7 +22,7 @@ function Stars({ value, onChange }) {
           key={n}
           type="button"
           onClick={() => onChange(value === n ? null : n)}
-          className={`text-2xl leading-none transition-colors ${
+          className={`p-2 inline-flex text-2xl leading-none transition-colors ${
             value >= n ? 'text-amber-400' : 'text-stone-200 hover:text-amber-200'
           }`}
           aria-label={`${n} star${n === 1 ? '' : 's'}`}
@@ -208,12 +208,12 @@ export default function BookDetail() {
 
   return (
     <div>
-      <Link to="/books" className="text-sm text-stone-400 hover:text-indigo-600 transition-colors">
+      <Link to="/books" className="py-2 inline-block text-sm text-stone-400 hover:text-indigo-600 transition-colors">
         ← My Shelf
       </Link>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[260px_1fr]">
-        <div className="max-w-64 sm:max-w-72 lg:max-w-none">
+        <div className="max-w-64 sm:max-w-72 lg:max-w-none mx-auto lg:mx-0">
           {coverSrc ? (
             <img
               src={coverSrc}
@@ -270,7 +270,7 @@ export default function BookDetail() {
           {log && !editing && (
             <button
               onClick={startEditing}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+              className="py-2 px-2 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
             >
               Edit
             </button>
@@ -319,7 +319,7 @@ export default function BookDetail() {
               <h3 className="text-base font-semibold text-stone-900">Edit Reading Record</h3>
               <button
                 onClick={cancelEditing}
-                className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
+                className="py-2 px-2 text-sm text-stone-500 hover:text-stone-900 transition-colors"
               >
                 Cancel
               </button>
@@ -416,7 +416,7 @@ export default function BookDetail() {
             }
           }}
           disabled={deleteMutation.isPending}
-          className="text-sm text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+          className="py-3 px-1 block text-sm text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
         >
           {deleteMutation.isPending ? 'Removing…' : 'Remove from shelf'}
         </button>

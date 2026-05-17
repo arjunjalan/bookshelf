@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import BottomNav from './BottomNav'
 
 export default function Layout() {
   const { user, logout } = useAuth()
@@ -11,6 +12,11 @@ export default function Layout() {
   function navCls(path) {
     const active = location.pathname === path || location.pathname.startsWith(path + '/')
     return `text-sm transition-colors ${active ? 'text-indigo-600 font-medium' : 'text-stone-600 hover:text-indigo-600'}`
+  }
+
+  function mobileLinkCls(path) {
+    const active = location.pathname === path || location.pathname.startsWith(path + '/')
+    return `py-3 text-sm transition-colors ${active ? 'text-indigo-600 font-medium' : 'text-stone-600 hover:text-indigo-600'}`
   }
 
   function handleLogout() {
@@ -45,8 +51,9 @@ export default function Layout() {
               </button>
             </div>
 
+            {/* Hamburger — secondary nav only on mobile (core routes in BottomNav) */}
             <button
-              className="sm:hidden p-2 text-stone-500 hover:text-stone-900"
+              className="sm:hidden p-3 -mr-1 text-stone-500 hover:text-stone-900"
               onClick={() => setMenuOpen((o) => !o)}
               aria-label="Toggle menu"
             >
@@ -63,16 +70,13 @@ export default function Layout() {
           </div>
 
           {menuOpen && (
-            <div className="sm:hidden border-t border-stone-100 py-4 flex flex-col gap-4">
-              <Link to="/books" className={navCls('/books')} onClick={() => setMenuOpen(false)}>Shelf</Link>
-              <Link to="/books/add" className={navCls('/books/add')} onClick={() => setMenuOpen(false)}>Add book</Link>
-              <Link to="/stats" className={navCls('/stats')} onClick={() => setMenuOpen(false)}>Stats</Link>
-              <Link to="/chat" className={navCls('/chat')} onClick={() => setMenuOpen(false)}>Chat</Link>
-              <Link to="/import" className={navCls('/import')} onClick={() => setMenuOpen(false)}>Import</Link>
-              <span className="text-sm text-stone-400">{user?.email}</span>
+            <div className="sm:hidden border-t border-stone-100 py-2 flex flex-col">
+              <Link to="/books/add" className={mobileLinkCls('/books/add')} onClick={() => setMenuOpen(false)}>Add book</Link>
+              <Link to="/import" className={mobileLinkCls('/import')} onClick={() => setMenuOpen(false)}>Import</Link>
+              <span className="py-3 text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
-                className="text-sm text-stone-600 hover:text-indigo-600 text-left transition-colors"
+                className="py-3 text-sm text-stone-600 hover:text-indigo-600 text-left transition-colors"
               >
                 Log out
               </button>
@@ -81,9 +85,12 @@ export default function Layout() {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      {/* pb-20 on mobile reserves space above the BottomNav */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-24 sm:pb-8">
         <Outlet />
       </main>
+
+      <BottomNav />
     </div>
   )
 }

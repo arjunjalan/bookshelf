@@ -68,13 +68,13 @@ export default function Landing() {
       <nav className="bg-white border-b border-stone-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <span className="font-semibold text-stone-900 tracking-tight">Bookshelf</span>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm text-stone-600 hover:text-indigo-600 transition-colors">
+          <div className="flex items-center gap-1">
+            <Link to="/login" className="text-sm text-stone-600 hover:text-indigo-600 active:text-indigo-700 transition-colors px-3 py-3 min-h-[44px] inline-flex items-center">
               Log in
             </Link>
             <Link
               to="/register"
-              className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+              className="text-sm bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors min-h-[44px] inline-flex items-center"
             >
               Sign up free
             </Link>
