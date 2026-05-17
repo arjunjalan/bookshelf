@@ -67,11 +67,12 @@ export default function Settings() {
   const [bio, setBio] = useState('')
   const [topGenres, setTopGenres] = useState([])
   const [favouriteAuthors, setFavouriteAuthors] = useState([])
-  const [handleAvailable, setHandleAvailable] = useState(null)
+  const [handleAvailableRaw, setHandleAvailableRaw] = useState(null)
   const [checking, setChecking] = useState(false)
   const debounceRef = useRef(null)
   const [saved, setSaved] = useState(false)
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (profile) {
       setHandle(profile.handle ?? '')
@@ -81,24 +82,27 @@ export default function Settings() {
       setFavouriteAuthors(profile.favourite_authors ?? [])
     }
   }, [profile])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const originalHandle = profile?.handle ?? ''
 
+  // Derive availability at render time — true if unchanged, null if invalid
+  const handleTrimmed = handle.trim().toLowerCase()
+  const handleAvailable = handleTrimmed === originalHandle
+    ? true
+    : (HANDLE_RE.test(handleTrimmed) ? handleAvailableRaw : null)
+
   useEffect(() => {
     const trimmed = handle.trim().toLowerCase()
-    if (!trimmed || trimmed === originalHandle || !HANDLE_RE.test(trimmed)) {
-      setHandleAvailable(trimmed === originalHandle ? true : null)
-      setChecking(false)
-      return
-    }
-    setChecking(true)
     clearTimeout(debounceRef.current)
+    if (!trimmed || trimmed === originalHandle || !HANDLE_RE.test(trimmed)) return
     debounceRef.current = setTimeout(async () => {
+      setChecking(true)
       try {
         const res = await socialApi.checkHandle(trimmed)
-        setHandleAvailable(res.data.available)
+        setHandleAvailableRaw(res.data.available)
       } catch {
-        setHandleAvailable(null)
+        setHandleAvailableRaw(null)
       } finally {
         setChecking(false)
       }

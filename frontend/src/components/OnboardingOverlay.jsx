@@ -11,25 +11,25 @@ export default function OnboardingOverlay({ onSkip }) {
   const queryClient = useQueryClient()
   const [handle, setHandle] = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [handleAvailable, setHandleAvailable] = useState(null)
+  const [handleAvailableRaw, setHandleAvailableRaw] = useState(null)
   const [checking, setChecking] = useState(false)
   const debounceRef = useRef(null)
 
+  // Derive availability at render time — null when handle is invalid/empty
+  const handleTrimmed = handle.trim().toLowerCase()
+  const handleAvailable = HANDLE_RE.test(handleTrimmed) ? handleAvailableRaw : null
+
   useEffect(() => {
     const trimmed = handle.trim().toLowerCase()
-    if (!trimmed || !HANDLE_RE.test(trimmed)) {
-      setHandleAvailable(null)
-      setChecking(false)
-      return
-    }
-    setChecking(true)
     clearTimeout(debounceRef.current)
+    if (!trimmed || !HANDLE_RE.test(trimmed)) return
     debounceRef.current = setTimeout(async () => {
+      setChecking(true)
       try {
         const res = await socialApi.checkHandle(trimmed)
-        setHandleAvailable(res.data.available)
+        setHandleAvailableRaw(res.data.available)
       } catch {
-        setHandleAvailable(null)
+        setHandleAvailableRaw(null)
       } finally {
         setChecking(false)
       }
