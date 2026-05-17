@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -15,9 +16,10 @@ function formatDate(iso) {
 
 export default function Chat() {
   const queryClient = useQueryClient()
+  const location = useLocation()
   const [activeSessionId, setActiveSessionId] = useState(null)
   const [liveMessages, setLiveMessages] = useState([])
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(() => location.state?.message || '')
   const [error, setError] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const bottomRef = useRef(null)
