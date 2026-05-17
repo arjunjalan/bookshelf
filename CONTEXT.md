@@ -106,6 +106,9 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - New `frontend/src/components/ui/`: `Button` (primary/ghost variants, md/sm sizes), `Input`/`Textarea`/`Select` (unified indigo focus ring, forwardRef on Input), `Card` (no default padding), `Badge` (canonical STATUS_COLOR + STATUS_LABEL, replaces duplicates in BookCard and BookDetail), `ErrorBanner` (conditional render).
 - All 9 pages + 2 components updated: stone-900 primary buttons → indigo-600; focus rings → ring-indigo-500; active tab/chat-session → indigo-600/indigo-50; user chat bubble → indigo-600; chart BAR_COLOR → `#4f46e5`; nav hover/active → indigo-600 via `useLocation`; auth + 404 links → indigo-600.
 
+### 2026-05-16 — BookSummary missing isbn field (PR #93)
+- `app/schemas/reading_log.py`: `BookSummary` was missing `isbn: Optional[str] = None`. The reading list API (`GET /reading-logs`) uses this schema for the nested `book` object, so `book.isbn` was always `undefined` in the frontend — the Open Library cover URL was never constructed. Adding the field makes isbn flow through to BookCard and BookDetail.
+
 ### 2026-05-16 — Open Library cover stub fix (PR #91)
 - `frontend/src/components/BookCard.jsx` + `frontend/src/pages/BookDetail.jsx`: appended `?default=false` to Open Library cover URLs. Without it, Open Library returns a 1×1 pixel GIF for missing covers — a valid image that never triggers `onError`, leaving an invisible element and the hidden placeholder. `?default=false` makes the API return HTTP 404 instead, so `onError` fires and the gray placeholder shows correctly.
 
