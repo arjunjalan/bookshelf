@@ -28,8 +28,9 @@ export default function Chat() {
     queryFn: () => client.get('/chat/sessions').then((r) => r.data),
   })
 
-  // Derive effective session — auto-selects most recent without a setState-in-effect
-  const effectiveSessionId = activeSessionId ?? sessions[0]?.id ?? null
+  // 'new' sentinel = user explicitly wants a blank chat; null = auto-select most recent
+  const effectiveSessionId =
+    activeSessionId === 'new' ? null : (activeSessionId ?? sessions[0]?.id ?? null)
 
   const { data: sessionMessages = [] } = useQuery({
     queryKey: ['chat-messages', effectiveSessionId],
@@ -57,7 +58,7 @@ export default function Chat() {
   }
 
   function handleNewChat() {
-    setActiveSessionId(null)
+    setActiveSessionId('new')
     setLiveMessages([])
     setError('')
     sessionIdCaptured.current = false
