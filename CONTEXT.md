@@ -113,6 +113,16 @@ Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-17 — Mobile M2 — Offline caching strategy (PR #123, closes #117)
+- `frontend/public/sw.js`: full caching strategy replacing the M1 pass-through. Static assets (`/assets/*`, icons): cache-first — Vite content hashes guarantee freshness. API calls (cross-origin to Render/localhost): network-first with cache fallback. Cover images (`covers.openlibrary.org`): cache-first. Navigation: network-first → cached `/` → `offline.html`. Activate handler purges old caches by name to prevent stale accumulation across deploys. Font CDN (googleapis/gstatic) passes through to browser.
+- `frontend/public/offline.html`: plain static HTML offline fallback, no React/JS deps, styled to match app (stone-50 bg, indigo-600 button). Cached during SW install.
+- Epic #113 closed after all sub-tickets merged.
+
+### 2026-05-17 — Mobile M4 — iOS PWA polish (PR #122, closes #119)
+- `frontend/index.html`: added `apple-mobile-web-app-capable` (enables standalone mode on iOS), `apple-mobile-web-app-status-bar-style: black-translucent` (status bar overlays nav for edge-to-edge look), `apple-mobile-web-app-title: Bookshelf`.
+- `frontend/src/components/Layout.jsx` + `frontend/src/pages/Landing.jsx`: `env(safe-area-inset-top)` padding on both nav elements so content isn't clipped under the iPhone notch / Dynamic Island in standalone mode.
+- iOS limitations accepted: no push notifications, no background sync, splash screen startup images deferred (require 15+ device-specific PNGs).
+
 ### 2026-05-17 — Mobile M3 — Mobile UI audit and polish (PR #121, closes #118)
 - `frontend/src/components/BottomNav.jsx`: new fixed bottom nav bar with Home/Shelf/Stats/Chat. `sm:hidden`, `min-h-[56px]`, `env(safe-area-inset-bottom)` padding for iPhone notch. Active link gets `text-indigo-600`; inactive `text-stone-500`.
 - `frontend/src/components/Layout.jsx`: imports `BottomNav`; `<main>` gets `pb-24 sm:pb-8` to clear the bar; mobile menu simplified to Add book/Import/Log out (nav routes now in BottomNav); hamburger button padding raised to `p-3`.
