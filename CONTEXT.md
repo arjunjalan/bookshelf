@@ -99,6 +99,9 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-16 — New chat button fix (PR #86)
+- `frontend/src/pages/Chat.jsx`: `handleNewChat` was setting `activeSessionId = null`, but `effectiveSessionId` falls back to `sessions[0]?.id` when `activeSessionId` is null — so clicking "+ New chat" appeared to do nothing. Fixed by using `'new'` as a sentinel value; `effectiveSessionId` returns `null` on `'new'`, giving a genuinely blank chat state without triggering the auto-select fallback.
+
 ### 2026-05-16 — Chat window wipe fix (PR #85)
 - `frontend/src/pages/Chat.jsx`: awaiting `queryClient.invalidateQueries` for `chat-messages` before calling `setLiveMessages([])` — previously the clear fired before the refetch resolved, leaving `sessionMessages=[]` and `liveMessages=[]` simultaneously and blanking the window.
 
