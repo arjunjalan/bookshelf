@@ -12,6 +12,7 @@ class BookSummary(BaseModel):
     title: str
     author: str
     cover_url: Optional[str]
+    isbn: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
