@@ -113,6 +113,16 @@ Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-17 — Home dashboard + logged-out landing page (PR #115, closes #111, #112)
+- `frontend/src/pages/Home.jsx`: new post-login dashboard. Empty state (0 books): welcome message + Import from Goodreads + Add first book CTAs. Data state: stat tiles (books this year, currently reading count, avg rating), currently reading shelf strip, top genre/author from reader-profile, recently finished (3 cards), and chat prompt chips that navigate to `/chat` via `location.state.message`.
+- `frontend/src/pages/Landing.jsx`: new logged-out marketing page. `MockUI` CSS mockup component, hero 2-col grid, 3 feature cards (Log/Stats/Companion), Sign Up + Log In nav links. Route `/` now renders this instead of redirecting to `/books`.
+- `frontend/src/App.jsx`: `/` → `<Landing />`, added `/home` inside `ProtectedRoute > Layout`. Both new pages imported.
+- Post-login redirect: `Login.jsx` + `Register.jsx` now navigate to `/home` instead of `/books`.
+- `frontend/src/components/Layout.jsx`: logo link → `/home`; explicit "Shelf" nav link added to `/books` (desktop + mobile).
+- `frontend/src/pages/Chat.jsx`: `useLocation` imported; input state initialised with `location.state?.message || ''` so dashboard chip clicks pre-fill the chat.
+- `tests/e2e/smoke.spec.js`: `registerViaUI` helper updated — `toHaveURL('/books')` → `toHaveURL('/home')`.
+- 4 backend queries: `GET /reading-logs?limit=100` (all logs), `GET /reading-logs?status=reading` (currently reading), `GET /analytics/summary`, `GET /reader-profile`. All use existing endpoints, no new backend work.
+
 ### 2026-05-17 — Phase 8 — Production Deployment (PRs #109, #110, closes #51)
 - `frontend/vercel.json`: SPA rewrite rule (`/(.*) → /index.html`) so React Router handles all routes; without it refreshing on `/books` etc. returns 404 on Vercel.
 - `Dockerfile`: CMD updated to run `uv run alembic upgrade head && uv run uvicorn ...` — Render free tier has no pre-deploy command for Docker services so migrations run at container start.
