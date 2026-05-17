@@ -133,7 +133,7 @@ Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed. The social layer ship
 - `frontend/src/pages/Settings.jsx`: public profile editor for handle, display name, bio, declared favourite genres, and declared favourite authors.
 - `frontend/src/pages/Feed.jsx`: reading activity feed with TanStack `useInfiniteQuery` and Load more pagination.
 - `frontend/src/pages/UserProfile.jsx`: public profile page with optimistic follow/unfollow.
-- `frontend/src/App.jsx`, `Layout.jsx`, and `BottomNav.jsx`: adds `/feed`, `/settings`, and `/users/:handle`; desktop nav includes Feed/Settings; mobile bottom nav now has Home/Shelf/Stats/Chat/Feed.
+- `frontend/src/App.jsx`, `Layout.jsx`, and `BottomNav.jsx`: adds `/feed`, `/profile`, and `/users/:handle`; `/settings` redirects to `/profile`; desktop nav includes Feed/Profile; mobile bottom nav now has Home/Shelf/Stats/Chat/Feed.
 - `app/services/chat.py`: cold-start LLM prompt now includes declared social-profile genres/authors when the user has fewer than 10 finished books.
 
 ### 2026-05-17 — Mobile M2 — Offline caching strategy (PR #123, closes #117)

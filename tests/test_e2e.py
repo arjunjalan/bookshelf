@@ -151,3 +151,28 @@ def test_user_cannot_see_another_users_books():
     assert not any(b["id"] == book["id"] for b in books_b)
 
     assert client.get(f"/books/{book['id']}", headers=headers_b).status_code == 404
+
+
+def test_feed_returns_self_activity_without_social_profile():
+    """Feed should not fail or render empty just because the user skipped profile setup."""
+    headers = _register_and_login("feed_self")
+
+    book = client.post(
+        "/books",
+        json={"title": "Feed Source Book", "author": "Feed Author"},
+        headers=headers,
+    ).json()
+
+    r = client.post(
+        "/reading-logs",
+        json={"book_id": book["id"], "status": "reading"},
+        headers=headers,
+    )
+    assert r.status_code == 201
+
+    r = client.get("/feed", headers=headers)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["items"]
+    assert data["items"][0]["event_type"] == "started"
+    assert data["items"][0]["book"]["title"] == "Feed Source Book"

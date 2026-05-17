@@ -28,16 +28,19 @@ def get_feed(
 
     items = []
     for event in events:
-        if event.user is None or event.user.profile is None:
-            logger.warning("Feed event %s has no user profile — skipping", event.id)
+        if event.user is None:
+            logger.warning("Feed event %s has no user — skipping", event.id)
             continue
+        actor_handle = event.user.profile.handle if event.user.profile else event.user.email.split("@")[0]
+        actor_display_name = event.user.profile.display_name if event.user.profile else None
+        actor_avatar_url = event.user.profile.avatar_url if event.user.profile else None
         items.append(FeedEventRead(
             id=event.id,
             user_id=event.user_id,
             actor=FeedActorRead(
-                handle=event.user.profile.handle,
-                display_name=event.user.profile.display_name,
-                avatar_url=event.user.profile.avatar_url,
+                handle=actor_handle,
+                display_name=actor_display_name,
+                avatar_url=actor_avatar_url,
             ),
             event_type=event.event_type,
             book=BookMiniRead(

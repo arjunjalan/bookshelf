@@ -194,7 +194,7 @@ Run this once for existing reading logs. Re-running can duplicate status events;
 | `/stats` | Analytics dashboard |
 | `/chat` | Reader-aware chat companion |
 | `/feed` | Reading activity feed for you and followed readers |
-| `/settings` | Public profile and declared preference editor |
+| `/profile` | Public profile and declared preference editor |
 | `/users/{handle}` | Public reader profile with follow/unfollow |
 | `/import` | Goodreads CSV import |
 
