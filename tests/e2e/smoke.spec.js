@@ -93,7 +93,8 @@ test.describe('Add book', () => {
     await expect(page).toHaveURL(/\/books\/[0-9a-f-]+$/)
     await expect(page.getByRole('heading', { name: 'Dune' })).toBeVisible()
     await expect(page.getByText('412 pages')).toBeVisible()
-    await expect(page.getByText('Published 1965')).toBeVisible()
+    await expect(page.getByText('Published')).toBeVisible()
+    await expect(page.getByText('1965')).toBeVisible()
 
     await page.goto('/books')
     await page.getByRole('button', { name: 'Read', exact: true }).click()
@@ -171,7 +172,7 @@ test.describe('Book detail', () => {
 
     await page.getByRole('button', { name: 'Edit' }).click()
     await page.getByLabel('Status').selectOption('read')
-    await page.getByRole('button', { name: '★' }).nth(3).click()
+    await page.getByRole('button', { name: '4 stars' }).click()
     await page.getByLabel('Notes').fill('A persisted note')
     await page.getByRole('button', { name: 'Save' }).click()
 
