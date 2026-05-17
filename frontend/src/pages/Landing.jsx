@@ -18,42 +18,71 @@ const FEATURES = [
   },
 ]
 
-function MockUI() {
+function ProductPreview() {
   return (
     <div className="w-full max-w-md mx-auto rounded-2xl border border-stone-200 bg-white shadow-xl overflow-hidden text-left">
-      {/* mock nav */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-stone-100">
-        <div className="w-3 h-3 rounded-full bg-stone-200" />
-        <div className="w-3 h-3 rounded-full bg-stone-200" />
-        <div className="w-3 h-3 rounded-full bg-stone-200" />
-        <div className="flex-1 flex justify-center">
-          <div className="h-3 bg-stone-100 rounded w-24" />
+      <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
+        <div>
+          <p className="text-xs font-medium text-stone-400">Bookshelf</p>
+          <p className="text-sm font-semibold text-stone-900">Home</p>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] font-medium">
+          <span className="text-indigo-600">Shelf</span>
+          <span className="text-stone-300">Stats</span>
+          <span className="text-stone-300">Chat</span>
         </div>
       </div>
-      {/* mock content */}
-      <div className="p-5 flex flex-col gap-4">
-        <div className="h-4 bg-stone-100 rounded w-40" />
-        {/* mock book cards */}
-        {[1, 2].map((n) => (
-          <div key={n} className="flex gap-3 p-3 rounded-lg border border-stone-100">
-            <div className="w-8 h-12 bg-indigo-100 rounded flex-shrink-0" />
-            <div className="flex flex-col gap-1.5 flex-1 justify-center">
-              <div className="h-2.5 bg-stone-200 rounded w-3/4" />
-              <div className="h-2 bg-stone-100 rounded w-1/2" />
-              <div className="h-2 bg-blue-100 rounded w-16 mt-0.5" />
+
+      <div className="p-5 space-y-4">
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            ['24', 'books this year'],
+            ['3', 'reading now'],
+            ['4.4', 'avg rating'],
+          ].map(([value, label]) => (
+            <div key={label} className="rounded-lg border border-stone-100 bg-stone-50 p-3">
+              <p className="text-xl font-semibold text-stone-900">{value}</p>
+              <p className="mt-1 text-[10px] leading-tight text-stone-500">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-xl border border-stone-200 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-stone-900">Currently reading</p>
+            <span className="text-[10px] font-medium text-indigo-600">Reading</span>
+          </div>
+          <div className="mt-4 flex gap-3">
+            <div className="h-20 w-14 flex-shrink-0 rounded bg-gradient-to-br from-indigo-500 to-sky-400 shadow-sm" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-stone-900">Tomorrow, and Tomorrow, and Tomorrow</p>
+              <p className="mt-1 text-xs text-stone-500">Gabrielle Zevin</p>
+              <div className="mt-4 h-2 rounded-full bg-stone-100">
+                <div className="h-2 w-2/3 rounded-full bg-indigo-600" />
+              </div>
+              <p className="mt-2 text-[10px] text-stone-400">67% through</p>
             </div>
           </div>
-        ))}
-        {/* mock chat prompt */}
-        <div className="mt-1 rounded-xl border border-indigo-100 bg-indigo-50 p-3 flex flex-col gap-2">
-          <div className="h-2 bg-indigo-200 rounded w-40" />
-          <div className="flex gap-2 mt-1">
-            <div className="flex-1 h-8 bg-white rounded-lg border border-stone-200" />
-            <div className="w-14 h-8 bg-indigo-600 rounded-lg" />
+        </div>
+
+        <div className="grid grid-cols-[1fr_auto] gap-3">
+          <div className="rounded-xl border border-stone-200 p-4">
+            <p className="text-xs font-medium text-stone-500">Top genre</p>
+            <p className="mt-1 text-sm font-semibold text-stone-900">Literary fiction</p>
           </div>
-          <div className="flex gap-1.5">
-            <div className="h-5 bg-white border border-stone-200 rounded-full w-28" />
-            <div className="h-5 bg-white border border-stone-200 rounded-full w-20" />
+          <div className="rounded-xl border border-stone-200 p-4 text-right">
+            <p className="text-xs font-medium text-stone-500">Pace</p>
+            <p className="mt-1 text-sm font-semibold text-stone-900">9 days</p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
+          <p className="text-sm font-semibold text-stone-900">Ask your companion</p>
+          <p className="mt-1 text-xs leading-relaxed text-stone-600">
+            "What should I read after my last five-star novel?"
+          </p>
+          <div className="mt-3 inline-flex rounded-full bg-white px-3 py-1 text-[10px] font-medium text-indigo-600 ring-1 ring-indigo-100">
+            Uses your shelf and ratings
           </div>
         </div>
       </div>
@@ -104,7 +133,7 @@ export default function Landing() {
               </Link>
             </div>
           </div>
-          <MockUI />
+          <ProductPreview />
         </div>
 
         {/* Features */}
