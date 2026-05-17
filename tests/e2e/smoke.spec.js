@@ -24,6 +24,11 @@ async function registerViaUI(page) {
   await page.getByLabel('Password').fill(PASSWORD)
   await page.getByRole('button', { name: 'Create account' }).click()
   await expect(page).toHaveURL('/home')
+  // Dismiss the social onboarding overlay so it doesn't block test interactions
+  const skipBtn = page.getByTestId('skip-onboarding')
+  if (await skipBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await skipBtn.click()
+  }
   return email
 }
 

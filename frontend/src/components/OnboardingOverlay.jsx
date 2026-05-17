@@ -118,6 +118,7 @@ export default function OnboardingOverlay({ onSkip }) {
               type="button"
               className="flex-1"
               onClick={onSkip}
+              data-testid="skip-onboarding"
             >
               Skip for now
             </Button>
