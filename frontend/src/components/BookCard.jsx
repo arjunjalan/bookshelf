@@ -72,7 +72,7 @@ export default function BookCard({ log, onStatusChange, onRemove, pendingAction 
                 aria-pressed={isCurrent}
                 disabled={disabled}
                 onClick={() => onStatusChange(log, action.value)}
-                className={`h-8 rounded-lg border px-3 text-xs font-medium transition-colors disabled:opacity-100 ${activeClasses}`}
+                className={`min-h-[44px] rounded-lg border px-3 text-xs font-medium transition-colors disabled:opacity-100 ${activeClasses}`}
               >
                 {pendingAction === action.value ? 'Saving...' : action.label}
               </button>
@@ -83,7 +83,7 @@ export default function BookCard({ log, onStatusChange, onRemove, pendingAction 
             aria-label={`Remove ${book.title} from shelf`}
             disabled={isPending}
             onClick={() => onRemove(log)}
-            className="h-8 rounded-lg border border-red-100 px-3 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50"
+            className="min-h-[44px] rounded-lg border border-red-100 px-3 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50"
           >
             {pendingAction === 'remove' ? 'Removing...' : 'Remove'}
           </button>

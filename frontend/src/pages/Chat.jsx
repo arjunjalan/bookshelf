@@ -22,6 +22,7 @@ export default function Chat() {
   const [input, setInput] = useState(() => location.state?.message || '')
   const [error, setError] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const bottomRef = useRef(null)
   const streamingContentRef = useRef('')
   const sessionIdCaptured = useRef(false)
@@ -59,6 +60,7 @@ export default function Chat() {
     setLiveMessages([])
     setError('')
     sessionIdCaptured.current = false
+    setSidebarOpen(false)
   }
 
   function handleNewChat() {
@@ -66,6 +68,7 @@ export default function Chat() {
     setLiveMessages([])
     setError('')
     sessionIdCaptured.current = false
+    setSidebarOpen(false)
   }
 
   async function sendMessage(text) {
@@ -173,20 +176,46 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex gap-4 -mx-4 sm:-mx-6 -my-8 h-[calc(100vh-3.5rem)]">
-      {/* Sidebar */}
-      <aside className="w-52 shrink-0 border-r border-stone-200 bg-white flex flex-col overflow-hidden">
-        <div className="p-3 border-b border-stone-100">
-          <Button onClick={handleNewChat} className="w-full text-sm px-3 py-2">
+    // 100dvh shrinks when the soft keyboard opens (unlike 100vh).
+    // On mobile we subtract the bottom nav height (4rem) in addition to the top nav (3.5rem).
+    <div className="flex gap-4 -mx-4 sm:-mx-6 -my-8 h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-3.5rem)]">
+
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-30 sm:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar — slide-in drawer on mobile, static on sm+ */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 w-64
+        sm:static sm:w-52 sm:z-auto sm:inset-auto sm:translate-x-0
+        shrink-0 border-r border-stone-200 bg-white flex flex-col overflow-hidden
+        transition-transform duration-200 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-3 border-b border-stone-100 flex items-center gap-2">
+          <Button onClick={handleNewChat} className="flex-1 text-sm px-3 py-2">
             + New chat
           </Button>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="sm:hidden p-2 text-stone-400 hover:text-stone-600 rounded-lg"
+            aria-label="Close sessions"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
         <ul className="flex-1 overflow-y-auto py-1">
           {sessions.map((s) => (
             <li key={s.id}>
               <button
                 onClick={() => handleSelectSession(s.id)}
-                className={`w-full text-left px-3 py-2.5 transition-colors ${
+                className={`w-full text-left px-3 py-3 transition-colors ${
                   s.id === effectiveSessionId
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'text-stone-600 hover:bg-stone-50'
@@ -205,11 +234,23 @@ export default function Chat() {
 
       {/* Chat area */}
       <div className="flex-1 flex flex-col gap-3 py-8 pr-4 sm:pr-6 min-w-0">
-        <div>
-          <h2 className="text-xl font-semibold text-stone-900">Reading companion</h2>
-          <p className="text-sm text-stone-500 mt-1">
-            Ask anything about your books, reading habits, or what to read next.
-          </p>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h2 className="text-xl font-semibold text-stone-900">Reading companion</h2>
+            <p className="text-sm text-stone-500 mt-1">
+              Ask anything about your books, reading habits, or what to read next.
+            </p>
+          </div>
+          {/* Sessions toggle — mobile only */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="sm:hidden flex-shrink-0 p-2 -mt-0.5 text-stone-400 hover:text-stone-600 rounded-lg"
+            aria-label="View chat sessions"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3.75 6.75h16.5M3.75 12h16.5M12 17.25h8.25" />
+            </svg>
+          </button>
         </div>
 
         <div className="flex-1 bg-white rounded-xl border border-stone-200 p-5 flex flex-col gap-3 overflow-y-auto min-h-0">
@@ -225,7 +266,7 @@ export default function Chat() {
                   <button
                     key={suggestion}
                     onClick={() => sendMessage(suggestion)}
-                    className="text-sm text-stone-600 border border-stone-200 rounded-lg px-3 py-2 hover:bg-stone-50 transition-colors text-left"
+                    className="text-sm text-stone-600 border border-stone-200 rounded-lg px-3 py-3 hover:bg-stone-50 transition-colors text-left"
                   >
                     {suggestion}
                   </button>
@@ -280,7 +321,7 @@ export default function Chat() {
             }}
             rows={2}
             placeholder="Ask about your reading…"
-            className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+            className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
           />
           <Button
             type="button"

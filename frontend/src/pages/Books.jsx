@@ -5,9 +5,9 @@ import client from '../api/client'
 import BookCard from '../components/BookCard'
 
 const TABS = [
-  { label: 'Currently Reading', value: 'reading' },
-  { label: 'Read', value: 'read' },
-  { label: 'Want to Read', value: 'want_to_read' },
+  { label: 'Reading', fullLabel: 'Currently Reading', value: 'reading' },
+  { label: 'Read', fullLabel: 'Read', value: 'read' },
+  { label: 'Want to Read', fullLabel: 'Want to Read', value: 'want_to_read' },
 ]
 
 function SkeletonCard() {
@@ -82,24 +82,25 @@ export default function Books() {
         <h2 className="text-xl font-semibold text-stone-900">My Shelf</h2>
         <Link
           to="/books/add"
-          className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+          className="text-sm bg-indigo-600 text-white px-4 py-3 sm:py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors min-h-[44px] inline-flex items-center"
         >
           + Add book
         </Link>
       </div>
 
-      <div className="flex gap-1 border-b border-stone-200 mb-6">
+      <div className="flex gap-1 border-b border-stone-200 mb-6 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`whitespace-nowrap px-4 py-3 sm:py-2 text-sm font-medium transition-colors border-b-2 -mb-px min-h-[44px] ${
               activeTab === tab.value
                 ? 'border-indigo-600 text-indigo-600'
                 : 'border-transparent text-stone-500 hover:text-stone-700'
             }`}
           >
-            {tab.label}
+            <span className="sm:hidden">{tab.label}</span>
+            <span className="hidden sm:inline">{tab.fullLabel}</span>
           </button>
         ))}
       </div>
