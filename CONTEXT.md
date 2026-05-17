@@ -25,6 +25,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #92 Phase 7.5 — Streamline add-book to a two-click shelf picker (merged PR #97)
 - [x] #98 Phase 7.7 — Automatic metadata enrichment after add/import (merged PR #99)
 - [x] #100 Phase 7.8 — Backfill metadata for existing books (merged PR #101)
+- [ ] #102 Backlog — Shelf card quick actions
 - [ ] #76 Backlog — Social friends layer (unscoped; not implemented in this pass)
 - [ ] Epic #71 open
 
@@ -109,6 +110,14 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - `README.md`: documents local usage, e.g. `uv run python scripts/backfill_metadata.py --email you@example.com --limit 50`.
 - `tests/test_metadata_enrichment.py`: adds coverage that backfill candidates include incomplete books and exclude books that already have cover + description.
 - Verification on PR #101: `lint-frontend`, backend `test`, and `e2e` all passed before merge.
+- Local backfill was run against `arjunjalan@gmail.com` in three batches: `30/26/4/0`, `60/44/16/0`, and `43/13/30/0` for considered/updated/unchanged/failed.
+- After the local backfill, `30 of 106` books still lacked a description and `31 of 106` still lacked either cover or description; remaining gaps are likely Open Library no-match/no-description cases.
+- Localhost was rebuilt after PR #101 with `./scripts/start.sh --build`, so the running local app includes the merged enrichment and backfill changes.
+
+### 2026-05-17 — Backlog capture — Shelf card quick actions (#102)
+- Created #102 for shelf-card action buttons: move a book between `Want to Read`, `Reading`, and `Read`, plus remove it from the shelf directly from shelf cards.
+- UX notes: keep card navigation distinct from action buttons; make the current shelf/status obvious; use confirmation or undo/recovery for removal.
+- Likely frontend-first implementation using existing `PATCH /reading-logs/{id}` and `DELETE /books/{id}`, with invalidation for `reading-logs`, `analytics`, and relevant book/detail queries.
 
 ### 2026-05-17 — Phase 7.7 — Automatic metadata enrichment (PR #99, closes #98)
 - `app/services/metadata_enrichment.py`: new reusable enrichment service. Searches Open Library through `MetadataAdapter` with ISBN first and title/author fallback; scores candidates; fills missing `cover_url`, `description`, `page_count`, and `published_date` only; preserves existing user/imported values.
