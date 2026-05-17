@@ -21,7 +21,9 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #82 Chat reading list context fix — inject read books into system prompt (PR #83 + direct commits)
 - [x] #73 Phase 7.2 — Chat history persistence (merged PR #84)
 - [x] #75 Phase 7.4 — Frontend redesign (merged PR #89)
-- [ ] #76 Phase 7.5 — Social friends layer
+- [x] #94 Phase 7.6 — Rich book detail page (merged PR #96)
+- [x] #92 Phase 7.5 — Streamline add-book to a two-click shelf picker (merged PR #97)
+- [ ] #76 Backlog — Social friends layer (unscoped; not implemented in this pass)
 - [ ] Epic #71 open
 
 ---
@@ -98,6 +100,20 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-17 — Phase 7.6 — Rich book detail page (PR #96, closes #94)
+- `frontend/src/pages/BookDetail.jsx`: reworked into a richer responsive detail view with large cover art (`cover_url` first, Open Library ISBN `-L` fallback), metadata grid, description section, and a fuller reading-record section.
+- Reading record display now surfaces status, rating, start/end dates, pace, mood, and notes with quiet empty states for missing optional data.
+- Edit mode now includes `mood` in the draft state and `PATCH /reading-logs/{id}` payload, alongside status, dates, rating, and notes.
+- `tests/e2e/smoke.spec.js`: updated detail test for accessible star button labels and the separated Published label/value layout.
+- Verification on PR #96: `lint-frontend`, backend `test`, and `e2e` all passed before merge.
+
+### 2026-05-17 — Phase 7.5 — Two-click shelf picker (PR #97, closes #92)
+- `frontend/src/pages/AddBook.jsx`: metadata search results now render inline shelf actions (`Want to Read`, `Reading`, `Read`) directly on the result card. Clicking one creates the book, creates its reading log, invalidates `reading-logs`/`analytics`, and navigates to `/books/{id}`.
+- Removed the selected metadata result → confirmation form path. Manual add remains as the fallback for custom or incomplete entries.
+- Added per-result quick-add loading state and inline errors, including duplicate ISBN conflict messaging.
+- `tests/e2e/smoke.spec.js`: updated add-book and full-search pagination smoke tests for the quick-add interaction.
+- Verification on PR #97: `lint-frontend`, backend `test`, and `e2e` all passed before merge.
 
 ### 2026-05-16 — Phase 7.4 — Frontend redesign (PR #89, closes #75)
 - `frontend/tailwind.config.js`: extended `fontFamily.sans` with Inter; imports `defaultTheme` from `tailwindcss/defaultTheme`.
