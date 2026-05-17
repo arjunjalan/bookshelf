@@ -118,6 +118,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - Created #102 for shelf-card action buttons and moved it into Phase 7 scope: move a book between `Want to Read`, `Reading`, and `Read`, plus remove it from the shelf directly from shelf cards.
 - UX notes: keep card navigation distinct from action buttons; make the current shelf/status obvious; gray out/disable redundant status actions for the current shelf; use confirmation or undo/recovery for removal.
 - Likely frontend-first implementation using existing `PATCH /reading-logs/{id}` and `DELETE /books/{id}`, with invalidation for `reading-logs`, `analytics`, and relevant book/detail queries.
+- #102 is linked to the `bookshelf` GitHub Project. `AGENTS.md` and `CLAUDE.md` now require every GitHub issue/ticket to be linked to that project.
 
 ### 2026-05-17 — Phase 7.7 — Automatic metadata enrichment (PR #99, closes #98)
 - `app/services/metadata_enrichment.py`: new reusable enrichment service. Searches Open Library through `MetadataAdapter` with ISBN first and title/author fallback; scores candidates; fills missing `cover_url`, `description`, `page_count`, and `published_date` only; preserves existing user/imported values.

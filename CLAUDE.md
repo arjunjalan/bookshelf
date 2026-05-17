@@ -126,6 +126,8 @@ This keeps the `main` working directory clean and makes it safe to work on multi
 - **Direct to main** — single-file config changes, `.gitignore` entries, doc/comment fixes, typo corrections. No logic, no risk, no need for CI. Always `git push` immediately after so local and remote stay in sync.
 - **Worktree + PR** — any application code, workflow changes, migrations, or multi-file changes with interdependencies. Needs CI and a review trail.
 
+**Every GitHub issue/ticket must be linked to the `bookshelf` GitHub Project** — when creating or updating tickets, confirm they appear in https://github.com/users/arjunjalan/projects/1. Use `gh project item-add 1 --owner arjunjalan --url <issue-url>` when needed.
+
 **When a PR merges, close the corresponding GitHub issue(s) immediately** — comment with the PR number so the close is traceable. Close story issues individually and the parent epic once all stories are done.
 
 **After merging a PR that adds frontend npm dependencies, run `npm install` in `frontend/` on main** — worktrees install into their own `node_modules` and the main repo's `node_modules` is not updated automatically on merge.
