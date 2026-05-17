@@ -106,11 +106,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - New `frontend/src/components/ui/`: `Button` (primary/ghost variants, md/sm sizes), `Input`/`Textarea`/`Select` (unified indigo focus ring, forwardRef on Input), `Card` (no default padding), `Badge` (canonical STATUS_COLOR + STATUS_LABEL, replaces duplicates in BookCard and BookDetail), `ErrorBanner` (conditional render).
 - All 9 pages + 2 components updated: stone-900 primary buttons → indigo-600; focus rings → ring-indigo-500; active tab/chat-session → indigo-600/indigo-50; user chat bubble → indigo-600; chart BAR_COLOR → `#4f46e5`; nav hover/active → indigo-600 via `useLocation`; auth + 404 links → indigo-600.
 
-### 2026-05-16 — Book cover images — STILL NOT WORKING
-- Three fixes applied (PR #90 initial fallback, PR #91 `?default=false`, PR #93 add `isbn` to `BookSummary`) but covers still not appearing after hard refresh.
-- Need further debugging: verify `isbn` is now present in the live API response, check browser network tab for cover image requests, confirm Open Library actually has covers for the user's specific ISBNs.
-
-### 2026-05-16 — BookSummary missing isbn field (PR #93)
+### 2026-05-16 — BookSummary missing isbn field (PR #93, closes #95)
 - `app/schemas/reading_log.py`: `BookSummary` was missing `isbn: Optional[str] = None`. The reading list API (`GET /reading-logs`) uses this schema for the nested `book` object, so `book.isbn` was always `undefined` in the frontend — the Open Library cover URL was never constructed. Adding the field makes isbn flow through to BookCard and BookDetail.
 
 ### 2026-05-16 — Open Library cover stub fix (PR #91)
