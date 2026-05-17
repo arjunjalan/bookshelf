@@ -25,7 +25,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #92 Phase 7.5 — Streamline add-book to a two-click shelf picker (merged PR #97)
 - [x] #98 Phase 7.7 — Automatic metadata enrichment after add/import (merged PR #99)
 - [x] #100 Phase 7.8 — Backfill metadata for existing books (merged PR #101)
-- [ ] #102 Phase 7.9 — Shelf card quick actions
+- [x] #102 Phase 7.9 — Shelf card quick actions (merged PR #103)
 - [ ] #76 Backlog — Social friends layer (unscoped; not implemented in this pass)
 - [ ] Epic #71 open
 
@@ -119,6 +119,14 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - UX notes: keep card navigation distinct from action buttons; make the current shelf/status obvious; gray out/disable redundant status actions for the current shelf; use confirmation or undo/recovery for removal.
 - Likely frontend-first implementation using existing `PATCH /reading-logs/{id}` and `DELETE /books/{id}`, with invalidation for `reading-logs`, `analytics`, and relevant book/detail queries.
 - #102 is linked to the `bookshelf` GitHub Project. `AGENTS.md` and `CLAUDE.md` now require every GitHub issue/ticket to be linked to that project.
+
+### 2026-05-17 — Phase 7.9 — Shelf card quick actions (PR #103, closes #102)
+- `frontend/src/components/BookCard.jsx`: card is now an `article` with a dedicated detail `Link` and separate action buttons, avoiding nested interactive controls. Each card exposes `Want to Read`, `Reading`, `Read`, and `Remove` actions.
+- The action matching the current `log.status` is disabled/grayed out with `aria-pressed`, so redundant no-op status updates are not sent.
+- `frontend/src/pages/Books.jsx`: adds status and remove mutations using existing `PATCH /reading-logs/{id}` and `DELETE /books/{id}` endpoints. Successful mutations invalidate `reading-logs`, `analytics`, and related detail queries.
+- Removal uses a browser confirmation before deleting the book from the shelf, matching the existing detail-page remove behavior.
+- `tests/e2e/smoke.spec.js`: adds shelf quick-action coverage for a card status transition, disabled current-status action, and removal.
+- Verification before merge: local `npm run lint`, `npm run build`, `uv run pytest`, and full Playwright E2E passed. PR #103 CI `lint-frontend`, backend `test`, and `e2e` all passed before merge.
 
 ### 2026-05-17 — Phase 7.7 — Automatic metadata enrichment (PR #99, closes #98)
 - `app/services/metadata_enrichment.py`: new reusable enrichment service. Searches Open Library through `MetadataAdapter` with ISBN first and title/author fallback; scores candidates; fills missing `cover_url`, `description`, `page_count`, and `published_date` only; preserves existing user/imported values.
