@@ -16,7 +16,7 @@ function Stars({ rating }) {
 
 export default function BookCard({ log }) {
   const { book, status, rating } = log
-  const coverSrc = book.cover_url || (book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg` : null)
+  const coverSrc = book.cover_url || (book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg?default=false` : null)
 
   return (
     <Link
