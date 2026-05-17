@@ -9,7 +9,7 @@ export default function NotFound() {
         <p className="text-stone-500 text-sm mb-6">This page doesn&apos;t exist.</p>
         <Link
           to="/books"
-          className="text-sm text-stone-900 font-medium hover:underline"
+          className="text-sm text-indigo-600 font-medium hover:text-indigo-700"
         >
           Back to my shelf
         </Link>

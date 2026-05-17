@@ -8,6 +8,8 @@ import {
   Tooltip,
 } from 'recharts'
 import client from '../api/client'
+import Card from '../components/ui/Card'
+import ErrorBanner from '../components/ui/ErrorBanner'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -20,7 +22,7 @@ function formatMonth(dateStr) {
   })
 }
 
-const BAR_COLOR = '#44403c'       // stone-700
+const BAR_COLOR = '#4f46e5'       // indigo-600
 const BAR_COLOR_MUTED = '#a8a29e' // stone-400
 
 // ─── Local sub-components ───────────────────────────────────────────────────
@@ -31,12 +33,12 @@ function SkeletonBlock({ height = 'h-48' }) {
 
 function SectionCard({ title, children }) {
   return (
-    <div className="bg-white rounded-xl border border-stone-200 p-5">
+    <Card className="p-5">
       <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-4">
         {title}
       </p>
       {children}
-    </div>
+    </Card>
   )
 }
 
@@ -127,7 +129,7 @@ export default function Stats() {
 
       {/* ── Summary cards ── */}
       {summaryError ? (
-        <p className="text-sm text-red-600">Failed to load summary.</p>
+        <ErrorBanner message="Failed to load summary." />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {summaryLoading ? (
@@ -139,22 +141,22 @@ export default function Stats() {
             </>
           ) : (
             <>
-              <div className="bg-white rounded-xl border border-stone-200 p-5">
+              <Card className="p-5">
                 <p className="text-xs text-stone-400 mb-1">Books read</p>
                 <p className="text-2xl font-semibold text-stone-900">{totalBooks}</p>
-              </div>
-              <div className="bg-white rounded-xl border border-stone-200 p-5">
+              </Card>
+              <Card className="p-5">
                 <p className="text-xs text-stone-400 mb-1">Avg rating</p>
                 <p className="text-2xl font-semibold text-stone-900">{avgRating}</p>
-              </div>
-              <div className="bg-white rounded-xl border border-stone-200 p-5">
+              </Card>
+              <Card className="p-5">
                 <p className="text-xs text-stone-400 mb-1">Avg days / book</p>
                 <p className="text-2xl font-semibold text-stone-900">{avgDays}</p>
-              </div>
-              <div className="bg-white rounded-xl border border-stone-200 p-5">
+              </Card>
+              <Card className="p-5">
                 <p className="text-xs text-stone-400 mb-1">Top genre</p>
                 <p className="text-2xl font-semibold text-stone-900 truncate">{topGenre}</p>
-              </div>
+              </Card>
             </>
           )}
         </div>
@@ -162,9 +164,7 @@ export default function Stats() {
 
       {/* ── Books over time ── */}
       <SectionCard title="Books finished per month">
-        {overTimeError && (
-          <p className="text-sm text-red-600">Failed to load chart.</p>
-        )}
+        {overTimeError && <ErrorBanner message="Failed to load chart." />}
         {overTimeLoading && <SkeletonBlock height="h-48" />}
         {!overTimeLoading && !overTimeError && overTimeData.length === 0 && (
           <ChartEmpty message="No finished books yet — mark some books as read to see your reading history" />
@@ -196,9 +196,7 @@ export default function Stats() {
 
       {/* ── By genre ── */}
       <SectionCard title="Books by genre">
-        {byGenreError && (
-          <p className="text-sm text-red-600">Failed to load chart.</p>
-        )}
+        {byGenreError && <ErrorBanner message="Failed to load chart." />}
         {byGenreLoading && <SkeletonBlock height="h-48" />}
         {!byGenreLoading && !byGenreError && (byGenre ?? []).length === 0 && (
           <ChartEmpty message="No genre data yet — add genres to your books to see a breakdown" />
@@ -237,9 +235,7 @@ export default function Stats() {
 
       {/* ── By author ── */}
       <SectionCard title="Books by author">
-        {byAuthorError && (
-          <p className="text-sm text-red-600">Failed to load chart.</p>
-        )}
+        {byAuthorError && <ErrorBanner message="Failed to load chart." />}
         {byAuthorLoading && <SkeletonBlock height="h-48" />}
         {!byAuthorLoading && !byAuthorError && (byAuthor ?? []).length === 0 && (
           <ChartEmpty message="No finished books yet — finish some books to see author stats" />
@@ -278,9 +274,7 @@ export default function Stats() {
 
       {/* ── Pace ── */}
       <SectionCard title="Days to finish each book">
-        {paceError && (
-          <p className="text-sm text-red-600">Failed to load chart.</p>
-        )}
+        {paceError && <ErrorBanner message="Failed to load chart." />}
         {paceLoading && <SkeletonBlock height="h-48" />}
         {!paceLoading && !paceError && (pace ?? []).length === 0 && (
           <ChartEmpty message="No pace data yet — books need both a start and end date to appear here" />

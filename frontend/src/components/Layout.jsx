@@ -1,11 +1,17 @@
 import { useState } from 'react'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+
+  function navCls(path) {
+    const active = location.pathname === path || location.pathname.startsWith(path + '/')
+    return `text-sm transition-colors ${active ? 'text-indigo-600 font-medium' : 'text-stone-600 hover:text-indigo-600'}`
+  }
 
   function handleLogout() {
     logout()
@@ -25,34 +31,14 @@ export default function Layout() {
             </Link>
 
             <div className="hidden sm:flex items-center gap-6">
-              <Link
-                to="/books/add"
-                className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
-              >
-                Add book
-              </Link>
-              <Link
-                to="/stats"
-                className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
-              >
-                Stats
-              </Link>
-              <Link
-                to="/chat"
-                className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
-              >
-                Chat
-              </Link>
-              <Link
-                to="/import"
-                className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
-              >
-                Import
-              </Link>
+              <Link to="/books/add" className={navCls('/books/add')}>Add book</Link>
+              <Link to="/stats" className={navCls('/stats')}>Stats</Link>
+              <Link to="/chat" className={navCls('/chat')}>Chat</Link>
+              <Link to="/import" className={navCls('/import')}>Import</Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
-                className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
+                className="text-sm text-stone-600 hover:text-indigo-600 transition-colors"
               >
                 Log out
               </button>
@@ -77,38 +63,14 @@ export default function Layout() {
 
           {menuOpen && (
             <div className="sm:hidden border-t border-stone-100 py-4 flex flex-col gap-4">
-              <Link
-                to="/books/add"
-                className="text-sm text-stone-600"
-                onClick={() => setMenuOpen(false)}
-              >
-                Add book
-              </Link>
-              <Link
-                to="/stats"
-                className="text-sm text-stone-600"
-                onClick={() => setMenuOpen(false)}
-              >
-                Stats
-              </Link>
-              <Link
-                to="/chat"
-                className="text-sm text-stone-600"
-                onClick={() => setMenuOpen(false)}
-              >
-                Chat
-              </Link>
-              <Link
-                to="/import"
-                className="text-sm text-stone-600"
-                onClick={() => setMenuOpen(false)}
-              >
-                Import
-              </Link>
+              <Link to="/books/add" className={navCls('/books/add')} onClick={() => setMenuOpen(false)}>Add book</Link>
+              <Link to="/stats" className={navCls('/stats')} onClick={() => setMenuOpen(false)}>Stats</Link>
+              <Link to="/chat" className={navCls('/chat')} onClick={() => setMenuOpen(false)}>Chat</Link>
+              <Link to="/import" className={navCls('/import')} onClick={() => setMenuOpen(false)}>Import</Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
-                className="text-sm text-stone-600 text-left"
+                className="text-sm text-stone-600 hover:text-indigo-600 text-left transition-colors"
               >
                 Log out
               </button>

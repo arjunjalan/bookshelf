@@ -2,18 +2,17 @@ import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import client from '../api/client'
+import Button from '../components/ui/Button'
+import { Input, Textarea, Select } from '../components/ui/Input'
+import Card from '../components/ui/Card'
+import Badge from '../components/ui/Badge'
+import ErrorBanner from '../components/ui/ErrorBanner'
 
 const STATUS_OPTIONS = [
   { label: 'Currently Reading', value: 'reading' },
   { label: 'Read', value: 'read' },
   { label: 'Want to Read', value: 'want_to_read' },
 ]
-
-const STATUS_COLOR = {
-  reading: 'bg-blue-50 text-blue-700',
-  read: 'bg-green-50 text-green-700',
-  want_to_read: 'bg-amber-50 text-amber-700',
-}
 
 function Stars({ value, onChange }) {
   return (
@@ -127,7 +126,7 @@ export default function BookDetail() {
         <p className="text-6xl font-bold text-stone-200 mb-2">404</p>
         <p className="text-lg font-semibold text-stone-900 mb-1">Book not found</p>
         <p className="text-sm text-stone-500 mb-6">This book doesn&apos;t exist on your shelf.</p>
-        <Link to="/books" className="text-sm text-stone-900 font-medium hover:underline">
+        <Link to="/books" className="text-sm text-indigo-600 font-medium hover:text-indigo-700">
           Back to my shelf
         </Link>
       </div>
@@ -136,7 +135,7 @@ export default function BookDetail() {
 
   return (
     <div className="max-w-lg">
-      <Link to="/books" className="text-sm text-stone-400 hover:text-stone-700 transition-colors">
+      <Link to="/books" className="text-sm text-stone-400 hover:text-indigo-600 transition-colors">
         ← My Shelf
       </Link>
 
@@ -165,11 +164,7 @@ export default function BookDetail() {
             </p>
           )}
           {log && !editing && (
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full font-medium w-fit mt-1 ${STATUS_COLOR[log.status]}`}
-            >
-              {STATUS_OPTIONS.find((o) => o.value === log.status)?.label}
-            </span>
+            <Badge status={log.status} className="w-fit mt-1" />
           )}
         </div>
       </div>
@@ -179,7 +174,7 @@ export default function BookDetail() {
       )}
 
       {log && (
-        <div className="mt-6 bg-white rounded-xl border border-stone-200 p-5 flex flex-col gap-4">
+        <Card className="mt-6 p-5 flex flex-col gap-4">
           {!editing ? (
             <>
               <div className="flex items-center justify-between">
@@ -233,46 +228,39 @@ export default function BookDetail() {
             <>
               <h3 className="text-sm font-medium text-stone-700">Edit reading record</h3>
 
-              {saveError && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                  {saveError}
-                </p>
-              )}
+              <ErrorBanner message={saveError} />
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="edit-status" className="text-xs font-medium text-stone-600">Status</label>
-                <select
+                <Select
                   id="edit-status"
                   value={draft.status}
                   onChange={(e) => setDraftField('status')(e.target.value)}
-                  className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 bg-white"
                 >
                   {STATUS_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-stone-600">Start date</label>
-                  <input
+                  <Input
                     type="date"
                     value={draft.start_date}
                     onChange={(e) => setDraftField('start_date')(e.target.value)}
-                    className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium text-stone-600">End date</label>
-                  <input
+                  <Input
                     type="date"
                     value={draft.end_date}
                     onChange={(e) => setDraftField('end_date')(e.target.value)}
                     min={draft.start_date || undefined}
-                    className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
                   />
                 </div>
               </div>
@@ -284,33 +272,30 @@ export default function BookDetail() {
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="edit-notes" className="text-xs font-medium text-stone-600">Notes</label>
-                <textarea
+                <Textarea
                   id="edit-notes"
                   value={draft.notes}
                   onChange={(e) => setDraftField('notes')(e.target.value)}
                   rows={4}
-                  className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none"
+                  className="resize-none"
                 />
               </div>
 
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={saveEditing}
                   disabled={updateMutation.isPending}
-                  className="flex-1 bg-stone-900 text-white rounded-lg py-2 text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
+                  className="flex-1"
                 >
                   {updateMutation.isPending ? 'Saving…' : 'Save'}
-                </button>
-                <button
-                  onClick={cancelEditing}
-                  className="flex-1 border border-stone-200 text-stone-700 rounded-lg py-2 text-sm hover:bg-stone-50 transition-colors"
-                >
+                </Button>
+                <Button variant="ghost" onClick={cancelEditing} className="flex-1">
                   Cancel
-                </button>
+                </Button>
               </div>
             </>
           )}
-        </div>
+        </Card>
       )}
 
       <div className="mt-6">
