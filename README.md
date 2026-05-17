@@ -1,8 +1,8 @@
 # Bookshelf
 
-Bookshelf is a full-stack reading companion for tracking a personal library, logging reading history, importing Goodreads data, reviewing reading analytics, and chatting with an LLM that has context from your shelf.
+Bookshelf is a full-stack reading companion for tracking a personal library, logging reading history, following other readers, reviewing reading analytics, and chatting with an LLM that has context from your shelf.
 
-The app is built as a production-style web application: authenticated API, persistent Postgres data model, background metadata enrichment, analytics endpoints, a responsive React frontend, PWA install support, offline caching, and deployment targets for Render, Vercel, and Supabase.
+The app is built as a production-style web application: authenticated API, persistent Postgres data model, social profiles and activity feed, background metadata enrichment, analytics endpoints, a responsive React frontend, PWA install support, offline caching, and deployment targets for Render, Vercel, and Supabase.
 
 ## Live App
 
@@ -22,7 +22,9 @@ Render free-tier services may cold start after inactivity.
 - Record reading logs with rating, start/end dates, computed pace, mood, and notes.
 - Review analytics for reading volume, genre/author distribution, average rating, and reading pace.
 - Build a reader profile from historical preferences and reading behavior.
+- Create a public social profile, choose a handle, follow other readers, and browse a feed of reading activity.
 - Chat with a reading companion backed by OpenRouter/OpenAI-compatible chat models, with persisted conversation history and shelf-aware context.
+- Seed cold-start chat recommendations with declared favourite genres and authors from the user's social profile.
 - Install the frontend as a PWA with app icons, standalone display mode, iOS safe-area handling, and offline fallbacks for cached app routes, API reads, and book cover images.
 
 ## Stack
@@ -34,6 +36,7 @@ Render free-tier services may cold start after inactivity.
 | Auth | Stateless JWT, bcrypt password hashes |
 | Frontend | React, Vite, Tailwind CSS, TanStack Query, Axios |
 | PWA | Web app manifest, custom service worker, install icons, offline fallback |
+| Social | User profiles, follow graph, cursor-paginated activity feed |
 | Metadata | Open Library API behind a MetadataAdapter |
 | LLM | OpenRouter via OpenAI-compatible client behind an LLMAdapter |
 | Testing | Pytest, Playwright |
@@ -58,7 +61,7 @@ bookshelf/
 │   │   ├── api/        # Axios client and auth interceptor
 │   │   ├── contexts/   # AuthContext
 │   │   ├── components/ # Layout, bottom nav, route guards, shelf cards, UI primitives
-│   │   └── pages/      # Landing, home, shelf, add book, detail, stats, chat, import
+│   │   └── pages/      # Landing, home, shelf, add book, detail, stats, chat, feed, settings, import
 │   ├── public/         # Manifest, service worker, icons, offline fallback
 │   └── scripts/        # Icon generation
 ├── alembic/            # Database migrations
@@ -168,6 +171,15 @@ uv run python scripts/backfill_metadata.py --email you@example.com --dry-run
 
 Omit `--email` only for local/admin backfills across all users.
 
+Feed-event backfill after deploying the social layer:
+
+```bash
+uv run python scripts/backfill_feed_events.py --email you@example.com --dry-run
+uv run python scripts/backfill_feed_events.py --email you@example.com
+```
+
+Run this once for existing reading logs. Re-running can duplicate status events; rated events are idempotent.
+
 ## Frontend Routes
 
 | Route | Purpose |
@@ -181,13 +193,16 @@ Omit `--email` only for local/admin backfills across all users.
 | `/books/{id}` | Rich book detail and reading log editor |
 | `/stats` | Analytics dashboard |
 | `/chat` | Reader-aware chat companion |
+| `/feed` | Reading activity feed for you and followed readers |
+| `/settings` | Public profile and declared preference editor |
+| `/users/{handle}` | Public reader profile with follow/unfollow |
 | `/import` | Goodreads CSV import |
 
-On mobile, primary authenticated navigation is handled by the fixed bottom nav: Home, Shelf, Stats, and Chat. Secondary actions like Add book, Import, and Log out stay in the mobile menu.
+On mobile, primary authenticated navigation is handled by the fixed bottom nav: Home, Shelf, Stats, Chat, and Feed. Secondary actions like Add book, Import, Settings, and Log out stay in the mobile menu.
 
 ## API Surface
 
-All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Bearer token.
+All endpoints except `/health`, `/auth/register`, `/auth/login`, and `/profile/handle-check` require a Bearer token.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -215,8 +230,19 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 | `GET` | `/chat/sessions` | List persisted chat sessions |
 | `GET` | `/chat/sessions/{id}/messages` | List messages for a chat session |
 | `POST` | `/chat` | Stream a shelf-aware assistant response |
+| `GET` | `/profile/handle-check` | Check social handle availability |
+| `GET` | `/profile/me` | Fetch the authenticated user's public profile |
+| `POST` | `/profile` | Create a public profile |
+| `PATCH` | `/profile` | Update public profile fields and declared preferences |
+| `GET` | `/users/search` | Search public profiles by handle |
+| `GET` | `/users/{handle}` | Fetch a public profile |
+| `POST` | `/users/{handle}/follow` | Follow a user |
+| `DELETE` | `/users/{handle}/follow` | Unfollow a user |
+| `GET` | `/feed` | Cursor-paginated feed for self and followed users |
 
 Reading status values are `want_to_read`, `reading`, and `read`.
+
+Feed event types are `started`, `finished`, `rated`, and `want_to_read`.
 
 ## PWA and Offline Behavior
 
@@ -245,6 +271,14 @@ iOS support includes standalone mode metadata, `apple-touch-icon`, translucent s
 
 Those fields power analytics, reader profiling, and chat context. Historical reading data is treated as durable product data, not disposable UI state.
 
+The social layer adds:
+
+- `user_profiles` for handles, display names, bios, avatars, and declared genre/author preferences.
+- `follows` for the user follow graph.
+- `feed_events` for activity generated from reading-log status and rating changes.
+
+`feed_events` includes a partial unique index so each user/book pair has at most one `rated` event; re-rating updates that event payload instead of adding duplicates.
+
 ## Production Deployment
 
 Current production deployment:
@@ -272,13 +306,13 @@ Completed:
 - Reading analytics dashboard
 - Reader profile endpoint
 - Streaming LLM chat with persisted sessions
+- Social profiles, follow graph, onboarding, settings page, public profile pages, and feed
 - Mobile UI polish with bottom navigation and iOS safe-area handling
 - PWA foundation with manifest, install icons, service worker, and offline fallback
 - Production deployment
 
 Backlog:
 
-- Social/friends layer
 - Broader recommendation workflows
 - Push notifications and background sync, if the product needs them
 - Production hardening beyond the current personal-app deployment profile

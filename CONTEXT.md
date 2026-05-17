@@ -6,9 +6,17 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 8 — Production Deployment — Complete**
+**Post-Phase 8 — Social Layer — Complete**
 
-Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed.
+Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed. The social layer shipped after production deployment.
+
+---
+
+## Post-Phase 8 — Social Layer — Complete
+
+- [x] Social profiles, follow graph, feed, onboarding (merged PR #129, commit `94b256c`)
+- [x] #124, #125, #126, #127 closed by PR #129
+- [x] #76 Backlog — Social friends layer implemented as profiles, follows, and feed
 
 ---
 
@@ -35,7 +43,7 @@ Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed.
 - [x] #98 Phase 7.7 — Automatic metadata enrichment after add/import (merged PR #99)
 - [x] #100 Phase 7.8 — Backfill metadata for existing books (merged PR #101)
 - [x] #102 Phase 7.9 — Shelf card quick actions (merged PR #103)
-- [ ] #76 Backlog — Social friends layer (unscoped; not implemented in this pass)
+- [x] #76 Backlog — Social friends layer (implemented after Phase 8 via PR #129)
 - [x] Epic #71 closed
 
 ---
@@ -112,6 +120,21 @@ Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-17 — Social layer — profiles, follows, feed, onboarding (PR #129, closes #124-#127)
+- `alembic/versions/0009_social_layer.py`: adds `eventtype` enum, `user_profiles`, `follows`, and `feed_events`. Profiles are one-per-user with unique handles; follows are a composite PK with a no-self-follow check; feed events are indexed by user/time and globally by time. A partial unique index on rated events keeps one `rated` event per user/book.
+- `app/models/social.py` + `app/models/feed_event.py`: new ORM models for `UserProfile`, `Follow`, and `FeedEvent`. `User.profile` relationship added with cascade delete.
+- `app/routers/profile.py`: new `/profile` API surface — handle availability, `GET /profile/me`, create profile, and update profile including declared `top_genres` and `favourite_authors`.
+- `app/routers/users.py`: new `/users` API surface — profile search by handle, public profile fetch, follow, and unfollow. Self-follow is rejected.
+- `app/routers/feed.py` + `app/services/feed_events.py`: new cursor-paginated `/feed` endpoint for self plus followed users. Reading-log create/update generates `started`, `finished`, `want_to_read`, and `rated` events. Re-rating upserts the rated event payload rather than appending duplicates.
+- `scripts/backfill_feed_events.py`: local/admin script to generate feed events for existing reading logs. `--dry-run` lists work; re-running can duplicate status events, while rated events remain idempotent because of the partial unique index.
+- `frontend/src/api/social.js`: centralized social API client methods.
+- `frontend/src/components/OnboardingOverlay.jsx`: first-login/skippable profile setup prompt shown when an authenticated user has no social profile; skip state is stored in `sessionStorage`.
+- `frontend/src/pages/Settings.jsx`: public profile editor for handle, display name, bio, declared favourite genres, and declared favourite authors.
+- `frontend/src/pages/Feed.jsx`: reading activity feed with TanStack `useInfiniteQuery` and Load more pagination.
+- `frontend/src/pages/UserProfile.jsx`: public profile page with optimistic follow/unfollow.
+- `frontend/src/App.jsx`, `Layout.jsx`, and `BottomNav.jsx`: adds `/feed`, `/settings`, and `/users/:handle`; desktop nav includes Feed/Settings; mobile bottom nav now has Home/Shelf/Stats/Chat/Feed.
+- `app/services/chat.py`: cold-start LLM prompt now includes declared social-profile genres/authors when the user has fewer than 10 finished books.
 
 ### 2026-05-17 — Mobile M2 — Offline caching strategy (PR #123, closes #117)
 - `frontend/public/sw.js`: full caching strategy replacing the M1 pass-through. Static assets (`/assets/*`, icons): cache-first — Vite content hashes guarantee freshness. API calls (cross-origin to Render/localhost): network-first with cache fallback. Cover images (`covers.openlibrary.org`): cache-first. Navigation: network-first → cached `/` → `offline.html`. Activate handler purges old caches by name to prevent stale accumulation across deploys. Font CDN (googleapis/gstatic) passes through to browser.
