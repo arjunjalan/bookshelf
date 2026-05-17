@@ -186,3 +186,39 @@ test.describe('Book detail', () => {
     await expect(page.getByText('A persisted note')).toBeVisible()
   })
 })
+
+test.describe('Shelf quick actions', () => {
+  test('change status from card and remove from shelf', async ({ page, request }) => {
+    const email = await registerViaUI(page)
+    const token = await getToken(request, email)
+    await createBook(
+      request,
+      token,
+      { title: 'Quick Action Book', author: 'Shelf Author' },
+      'want_to_read',
+    )
+
+    await page.goto('/books')
+    await page.getByRole('button', { name: 'Want to Read', exact: true }).click()
+
+    await expect(page.getByText('Quick Action Book')).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Move Quick Action Book to Want to Read' }),
+    ).toBeDisabled()
+
+    await page.getByRole('button', { name: 'Move Quick Action Book to Reading' }).click()
+    await expect(page.getByText('Quick Action Book')).not.toBeVisible()
+
+    await page.getByRole('button', { name: 'Currently Reading' }).click()
+    await expect(page.getByText('Quick Action Book')).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'Move Quick Action Book to Reading' }),
+    ).toBeDisabled()
+
+    page.once('dialog', (dialog) => dialog.accept())
+    await page.getByRole('button', { name: 'Remove Quick Action Book from shelf' }).click()
+
+    await expect(page.getByText('Quick Action Book')).not.toBeVisible()
+    await expect(page.getByText('Nothing here yet')).toBeVisible()
+  })
+})
