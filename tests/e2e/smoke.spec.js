@@ -19,6 +19,10 @@ function uniqueEmail() {
 
 async function registerViaUI(page) {
   const email = uniqueEmail()
+  // Pre-set sessionStorage so the onboarding overlay never appears in any page load
+  await page.addInitScript(() => {
+    sessionStorage.setItem('bs_onboarding_skipped', '1')
+  })
   await page.goto('/register')
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(PASSWORD)

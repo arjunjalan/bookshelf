@@ -2,6 +2,8 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from typing import Optional
+
 from sqlalchemy import DateTime, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -11,6 +13,7 @@ from .base import Base
 if TYPE_CHECKING:
     from .chat import ChatSession
     from .reading_log import ReadingLog
+    from .social import UserProfile
 
 
 class User(Base):
@@ -30,4 +33,7 @@ class User(Base):
     )
     chat_sessions: Mapped[list["ChatSession"]] = relationship(
         "ChatSession", back_populates="user", cascade="all, delete-orphan"
+    )
+    profile: Mapped[Optional["UserProfile"]] = relationship(
+        "UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )

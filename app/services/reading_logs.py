@@ -23,6 +23,8 @@ def create_reading_log(
     db: Session,
     user_id: uuid.UUID,
     body: ReadingLogCreate,
+    *,
+    generate_events: bool = True,
 ) -> Optional[ReadingLog]:
     if not db.query(Book).filter(Book.id == body.book_id, Book.user_id == user_id).first():
         return None
@@ -32,6 +34,10 @@ def create_reading_log(
         **body.model_dump(),
     )
     db.add(log)
+    db.flush()
+    if generate_events:
+        from app.services import feed_events as feed_events_service
+        feed_events_service.generate_events_for_create(db, user_id, log)
     db.commit()
     db.refresh(log)
     db.refresh(log, attribute_names=["book"])
@@ -71,10 +77,16 @@ def update_reading_log(
     log: ReadingLog,
     body: ReadingLogUpdate,
 ) -> ReadingLog:
+    old_status = log.status
+    old_rating = log.rating
+
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(log, field, value)
 
     log.pace_days = compute_pace(log.start_date, log.end_date)
+
+    from app.services import feed_events as feed_events_service
+    feed_events_service.generate_events_for_update(db, log.user_id, log, old_status, old_rating)
 
     db.commit()
     db.refresh(log)

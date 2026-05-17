@@ -11,6 +11,9 @@ import BookDetail from './pages/BookDetail'
 import Stats from './pages/Stats'
 import Chat from './pages/Chat'
 import ImportCSV from './pages/ImportCSV'
+import Feed from './pages/Feed'
+import Settings from './pages/Settings'
+import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -28,6 +31,9 @@ export default function App() {
           <Route path="/stats" element={<Stats />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/import" element={<ImportCSV />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/users/:handle" element={<UserProfile />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
