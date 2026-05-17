@@ -67,6 +67,16 @@ uv run pytest                 # backend unit + integration tests
 npx playwright test           # E2E smoke tests (requires servers running)
 ```
 
+### Metadata Backfill
+
+Newly added and imported books are enriched automatically in the background. To enrich older books that already existed before automatic enrichment was added:
+
+```bash
+uv run python scripts/backfill_metadata.py --email you@example.com --limit 50
+```
+
+Use `--dry-run` to list candidate books without calling Open Library. Omit `--email` only for local/admin backfills across all users.
+
 ## API Overview
 
 All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Bearer token.

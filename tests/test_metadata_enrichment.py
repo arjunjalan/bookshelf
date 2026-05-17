@@ -9,6 +9,7 @@ from app.database import get_session_factory
 from app.main import app
 from app.models.book import Book
 from app.services.metadata_enrichment import enrich_book_metadata, get_metadata_enrichment_scheduler
+from scripts import backfill_metadata as backfill_script
 
 client = TestClient(app)
 
@@ -153,3 +154,55 @@ def test_goodreads_import_schedules_new_books_for_metadata_enrichment():
         db.close()
 
     assert imported_ids == {item.book_id for item in scheduled}
+
+
+def test_backfill_metadata_targets_existing_books_missing_core_metadata(monkeypatch):
+    user_email = f"backfill_{uuid4().hex[:8]}@example.com"
+    register = client.post("/auth/register", json={"email": user_email, "password": "testpass123"})
+    assert register.status_code == 201, register.text
+    login = client.post("/auth/login", json={"email": user_email, "password": "testpass123"})
+    assert login.status_code == 200, login.text
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    app.dependency_overrides[get_metadata_enrichment_scheduler] = _no_op_scheduler
+    try:
+        missing = client.post(
+            "/books",
+            json={"title": "Missing Metadata", "author": "Author A"},
+            headers=headers,
+        ).json()
+        complete = client.post(
+            "/books",
+            json={
+                "title": "Complete Metadata",
+                "author": "Author B",
+                "cover_url": "https://covers.example/complete.jpg",
+                "description": "Already complete.",
+            },
+            headers=headers,
+        ).json()
+    finally:
+        app.dependency_overrides.clear()
+
+    touched = []
+
+    def fake_enrich(db, user_id, book_id):
+        book = db.query(Book).filter(Book.id == book_id, Book.user_id == user_id).first()
+        touched.append(book.id)
+        book.description = "Backfilled."
+        db.commit()
+        db.refresh(book)
+        return book
+
+    monkeypatch.setattr(backfill_script, "enrich_book_metadata", fake_enrich)
+
+    db = get_session_factory()()
+    try:
+        summary = backfill_script.backfill_metadata(db, email=user_email, limit=10)
+    finally:
+        db.close()
+
+    assert summary.considered == 1
+    assert summary.updated == 1
+    assert str(touched[0]) == missing["id"]
+    assert str(touched[0]) != complete["id"]
