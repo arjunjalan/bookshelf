@@ -1,13 +1,31 @@
 import { useState } from 'react'
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
+import { socialApi } from '../api/social'
 import BottomNav from './BottomNav'
+import OnboardingOverlay from './OnboardingOverlay'
 
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [skipOnboarding, setSkipOnboarding] = useState(false)
+
+  const { data: socialProfile, isLoading: profileLoading } = useQuery({
+    queryKey: ['social-profile', 'me'],
+    queryFn: () =>
+      socialApi.getMyProfile()
+        .then((r) => r.data)
+        .catch((err) => {
+          if (err.response?.status === 404) return null
+          throw err
+        }),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const showOnboarding = !profileLoading && socialProfile === null && !skipOnboarding
 
   function navCls(path) {
     const active = location.pathname === path || location.pathname.startsWith(path + '/')
@@ -41,7 +59,9 @@ export default function Layout() {
               <Link to="/books/add" className={navCls('/books/add')}>Add book</Link>
               <Link to="/stats" className={navCls('/stats')}>Stats</Link>
               <Link to="/chat" className={navCls('/chat')}>Chat</Link>
+              <Link to="/feed" className={navCls('/feed')}>Feed</Link>
               <Link to="/import" className={navCls('/import')}>Import</Link>
+              <Link to="/settings" className={navCls('/settings')}>Settings</Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
@@ -73,6 +93,7 @@ export default function Layout() {
             <div className="sm:hidden border-t border-stone-100 py-2 flex flex-col">
               <Link to="/books/add" className={mobileLinkCls('/books/add')} onClick={() => setMenuOpen(false)}>Add book</Link>
               <Link to="/import" className={mobileLinkCls('/import')} onClick={() => setMenuOpen(false)}>Import</Link>
+              <Link to="/settings" className={mobileLinkCls('/settings')} onClick={() => setMenuOpen(false)}>Settings</Link>
               <span className="py-3 text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
@@ -91,6 +112,9 @@ export default function Layout() {
       </main>
 
       <BottomNav />
+      {showOnboarding && (
+        <OnboardingOverlay onSkip={() => setSkipOnboarding(true)} />
+      )}
     </div>
   )
 }

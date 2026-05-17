@@ -8,8 +8,11 @@ from app.adapters.llm import LLMAdapter
 from app.models.book import Book
 from app.models.reading_log import ReadingLog, ReadingStatus
 from app.services import reader_profile as reader_profile_service
+from app.services import social as social_service
 
 logger = logging.getLogger(__name__)
+
+COLD_START_THRESHOLD = 10
 
 _SYSTEM_PROMPT = """\
 You are a personal reading companion. Answer questions about books, reading, \
@@ -30,6 +33,14 @@ Average reading pace by genre: {pace}
 Books on the user's shelf:
 {books}\
 """
+
+
+def _count_finished_books(db: Session, user_id: uuid.UUID) -> int:
+    return (
+        db.query(ReadingLog)
+        .filter(ReadingLog.user_id == user_id, ReadingLog.status == ReadingStatus.READ)
+        .count()
+    )
 
 
 def _format_books(db: Session, user_id: uuid.UUID) -> str:
@@ -60,19 +71,35 @@ def _format_books(db: Session, user_id: uuid.UUID) -> str:
     return "\n".join(lines)
 
 
-def _format_profile(profile: dict, books_text: str) -> str:
-    genres = ", ".join(
+def _format_profile(
+    profile: dict,
+    books_text: str,
+    declared_genres: list[str],
+    declared_authors: list[str],
+    is_cold_start: bool,
+) -> str:
+    derived_genres = ", ".join(
         "{} ({} books{})".format(
             g["genre"],
             g["books_read"],
             f", avg rating {round(g['avg_rating'], 1)}" if g["avg_rating"] else "",
         )
         for g in profile["top_genres"]
-    ) or "none recorded"
+    )
+    if is_cold_start and declared_genres:
+        declared = ", ".join(f"{g} (declared preference)" for g in declared_genres)
+        genres = f"{derived_genres}, {declared}" if derived_genres else declared
+    else:
+        genres = derived_genres or "none recorded"
 
-    authors = ", ".join(
+    derived_authors = ", ".join(
         f"{a['author']} ({a['books_read']} books)" for a in profile["top_authors"]
-    ) or "none recorded"
+    )
+    if is_cold_start and declared_authors:
+        declared = ", ".join(f"{a} (declared preference)" for a in declared_authors)
+        authors = f"{derived_authors}, {declared}" if derived_authors else declared
+    else:
+        authors = derived_authors or "none recorded"
 
     ratings = ", ".join(
         f"{stars} stars: {count}"
@@ -95,9 +122,22 @@ def build_messages(
     message: str,
     history: list[dict],
 ) -> list[dict]:
-    profile = reader_profile_service.get_reader_profile(db, user_id)
+    reader_profile = reader_profile_service.get_reader_profile(db, user_id)
     books_text = _format_books(db, user_id)
-    system_content = _format_profile(profile, books_text)
+    finished_count = _count_finished_books(db, user_id)
+    is_cold_start = finished_count < COLD_START_THRESHOLD
+
+    declared_genres: list[str] = []
+    declared_authors: list[str] = []
+    if is_cold_start:
+        social_profile = social_service.get_profile(db, user_id)
+        if social_profile:
+            declared_genres = social_profile.top_genres or []
+            declared_authors = social_profile.favourite_authors or []
+
+    system_content = _format_profile(
+        reader_profile, books_text, declared_genres, declared_authors, is_cold_start
+    )
     messages: list[dict] = [{"role": "system", "content": system_content}]
     messages.extend(history)
     messages.append({"role": "user", "content": message})
