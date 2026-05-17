@@ -65,7 +65,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Nav */}
-      <nav className="bg-white border-b border-stone-200">
+      <nav className="bg-white border-b border-stone-200" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <span className="font-semibold text-stone-900 tracking-tight">Bookshelf</span>
           <div className="flex items-center gap-1">
