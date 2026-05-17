@@ -113,6 +113,29 @@ Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-17 — Mobile M3 — Mobile UI audit and polish (PR #121, closes #118)
+- `frontend/src/components/BottomNav.jsx`: new fixed bottom nav bar with Home/Shelf/Stats/Chat. `sm:hidden`, `min-h-[56px]`, `env(safe-area-inset-bottom)` padding for iPhone notch. Active link gets `text-indigo-600`; inactive `text-stone-500`.
+- `frontend/src/components/Layout.jsx`: imports `BottomNav`; `<main>` gets `pb-24 sm:pb-8` to clear the bar; mobile menu simplified to Add book/Import/Log out (nav routes now in BottomNav); hamburger button padding raised to `p-3`.
+- `frontend/src/pages/Chat.jsx`: outer height → `h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-3.5rem)]` (subtracts bottom nav on mobile); sidebar becomes `fixed inset-y-0 left-0 z-40 translate-x-full` slide-in drawer on mobile with backdrop overlay (`z-30`) and close button; sessions toggle button in chat header (sm:hidden).
+- `frontend/src/components/ui/Button.jsx`: `py-2` → `py-3 sm:py-2` for 44px mobile touch target.
+- `frontend/src/components/ui/Input.jsx`: `py-2 text-sm` → `py-2.5 text-base sm:text-sm` — prevents iOS auto-zoom on focus (16px floor).
+- `frontend/src/components/BookCard.jsx`: status action buttons raised to `min-h-[44px]`.
+- `frontend/src/pages/Books.jsx`: tab buttons `py-2` → `py-3 sm:py-2 min-h-[44px] whitespace-nowrap overflow-x-auto`; short/full tab labels for mobile vs desktop; "+ Add book" `min-h-[44px]`.
+- `frontend/src/pages/Home.jsx`: stats grid `grid-cols-3` → `grid-cols-1 sm:grid-cols-3`; recently finished `grid-cols-3` → `grid-cols-2 sm:grid-cols-3`; chat chips `min-h-[44px]`; input `text-base sm:text-sm`.
+- `frontend/src/pages/Stats.jsx`: all 4 charts wrapped in `overflow-x-auto` + `minWidth` div for horizontal scroll on mobile.
+- `frontend/src/pages/Landing.jsx`: nav links raised to `min-h-[44px]` with `py-3 inline-flex items-center`.
+- `frontend/src/pages/BookDetail.jsx`: star buttons `p-2 inline-flex` (≥40px); "Edit"/"Cancel" bare text buttons get `py-2 px-2`; "Remove from shelf" gets `py-3 px-1 block`; "← My Shelf" gets `py-2 inline-block`; cover wrapper gets `mx-auto lg:mx-0`.
+- `frontend/src/pages/AddBook.jsx`: `inputCls` → `text-base sm:text-sm`; LogSection date grid → `grid-cols-1 sm:grid-cols-2`; manual form grid → `grid-cols-1 sm:grid-cols-2` with `col-span-full`; quick-add status buttons `py-1.5` → `py-2.5`; typeahead `maxHeight` → `50vh`; full results `maxHeight` → `60vh`; "Add manually" / "← Back to search" / "← Back" bare text gets `py-2` padding; star buttons `p-2 inline-flex`.
+
+### 2026-05-17 — Mobile M1 — PWA foundation (PR #120, closes #116)
+- `frontend/public/manifest.json`: PWA manifest with `display: standalone`, `start_url: /home`, `theme_color: #4f46e5`, 4 icon entries (192/512/maskable/SVG).
+- `frontend/public/icon.svg`: bookshelf SVG icon in indigo-600 palette.
+- `frontend/public/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`: rasterized PNGs generated via `@resvg/resvg-js` (dev dep) from `node scripts/generate-icons.mjs` (run from `frontend/`).
+- `frontend/public/sw.js`: minimal pass-through service worker (`skipWaiting` + `clients.claim()`). Caching strategy deferred to M2.
+- `frontend/index.html`: `viewport-fit=cover`, `theme-color` meta, manifest link, apple-touch-icon link.
+- `frontend/src/main.jsx`: SW registered on `window.load`.
+- `frontend/package.json`: `"generate-icons"` npm script.
+
 ### 2026-05-17 — Home dashboard + logged-out landing page (PR #115, closes #111, #112)
 - `frontend/src/pages/Home.jsx`: new post-login dashboard. Empty state (0 books): welcome message + Import from Goodreads + Add first book CTAs. Data state: stat tiles (books this year, currently reading count, avg rating), currently reading shelf strip, top genre/author from reader-profile, recently finished (3 cards), and chat prompt chips that navigate to `/chat` via `location.state.message`.
 - `frontend/src/pages/Landing.jsx`: new logged-out marketing page. `MockUI` CSS mockup component, hero 2-col grid, 3 feature cards (Log/Stats/Companion), Sign Up + Log In nav links. Route `/` now renders this instead of redirecting to `/books`.
