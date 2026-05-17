@@ -15,7 +15,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
 
   if (token) {
-    navigate('/books', { replace: true })
+    navigate('/home', { replace: true })
     return null
   }
 
@@ -25,7 +25,7 @@ export default function Register() {
     setLoading(true)
     try {
       await register(email, password)
-      navigate('/books', { replace: true })
+      navigate('/home', { replace: true })
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed')
     } finally {

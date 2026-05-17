@@ -24,13 +24,14 @@ export default function Layout() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <Link
-              to="/books"
+              to="/home"
               className="font-semibold text-stone-900 text-base tracking-tight"
             >
               Bookshelf
             </Link>
 
             <div className="hidden sm:flex items-center gap-6">
+              <Link to="/books" className={navCls('/books')}>Shelf</Link>
               <Link to="/books/add" className={navCls('/books/add')}>Add book</Link>
               <Link to="/stats" className={navCls('/stats')}>Stats</Link>
               <Link to="/chat" className={navCls('/chat')}>Chat</Link>
@@ -63,6 +64,7 @@ export default function Layout() {
 
           {menuOpen && (
             <div className="sm:hidden border-t border-stone-100 py-4 flex flex-col gap-4">
+              <Link to="/books" className={navCls('/books')} onClick={() => setMenuOpen(false)}>Shelf</Link>
               <Link to="/books/add" className={navCls('/books/add')} onClick={() => setMenuOpen(false)}>Add book</Link>
               <Link to="/stats" className={navCls('/stats')} onClick={() => setMenuOpen(false)}>Stats</Link>
               <Link to="/chat" className={navCls('/chat')} onClick={() => setMenuOpen(false)}>Chat</Link>
