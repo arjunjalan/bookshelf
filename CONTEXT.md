@@ -116,7 +116,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 
 ### 2026-05-17 — Backlog capture — Shelf card quick actions (#102)
 - Created #102 for shelf-card action buttons: move a book between `Want to Read`, `Reading`, and `Read`, plus remove it from the shelf directly from shelf cards.
-- UX notes: keep card navigation distinct from action buttons; make the current shelf/status obvious; use confirmation or undo/recovery for removal.
+- UX notes: keep card navigation distinct from action buttons; make the current shelf/status obvious; gray out/disable redundant status actions for the current shelf; use confirmation or undo/recovery for removal.
 - Likely frontend-first implementation using existing `PATCH /reading-logs/{id}` and `DELETE /books/{id}`, with invalidation for `reading-logs`, `analytics`, and relevant book/detail queries.
 
 ### 2026-05-17 — Phase 7.7 — Automatic metadata enrichment (PR #99, closes #98)
