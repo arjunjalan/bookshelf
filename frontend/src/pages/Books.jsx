@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import client from '../api/client'
 import BookCard from '../components/BookCard'
 
@@ -25,12 +25,56 @@ function SkeletonCard() {
 
 export default function Books() {
   const [activeTab, setActiveTab] = useState('reading')
+  const queryClient = useQueryClient()
 
   const { data: logs, isLoading, isError } = useQuery({
     queryKey: ['reading-logs', activeTab],
     queryFn: () =>
       client.get('/reading-logs', { params: { status: activeTab } }).then((r) => r.data),
   })
+
+  const statusMutation = useMutation({
+    mutationFn: ({ log, status }) =>
+      client.patch(`/reading-logs/${log.id}`, { status }).then((r) => r.data),
+    onSuccess: (updatedLog) => {
+      queryClient.invalidateQueries({ queryKey: ['reading-logs'] })
+      queryClient.invalidateQueries({ queryKey: ['analytics'] })
+      queryClient.invalidateQueries({ queryKey: ['book', updatedLog.book.id] })
+      queryClient.invalidateQueries({ queryKey: ['reading-logs', { book_id: updatedLog.book.id }] })
+    },
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: (log) => client.delete(`/books/${log.book.id}`),
+    onSuccess: (_data, log) => {
+      queryClient.invalidateQueries({ queryKey: ['reading-logs'] })
+      queryClient.invalidateQueries({ queryKey: ['analytics'] })
+      queryClient.invalidateQueries({ queryKey: ['book', log.book.id] })
+      queryClient.invalidateQueries({ queryKey: ['reading-logs', { book_id: log.book.id }] })
+    },
+  })
+
+  function getPendingAction(log) {
+    if (statusMutation.isPending && statusMutation.variables?.log.id === log.id) {
+      return statusMutation.variables.status
+    }
+    if (removeMutation.isPending && removeMutation.variables?.id === log.id) {
+      return 'remove'
+    }
+    return null
+  }
+
+  function handleStatusChange(log, status) {
+    if (log.status === status || statusMutation.isPending || removeMutation.isPending) return
+    statusMutation.mutate({ log, status })
+  }
+
+  function handleRemove(log) {
+    if (statusMutation.isPending || removeMutation.isPending) return
+    const confirmed = window.confirm(`Remove "${log.book.title}" from your shelf?`)
+    if (!confirmed) return
+    removeMutation.mutate(log)
+  }
 
   return (
     <div>
@@ -72,6 +116,12 @@ export default function Books() {
         <p className="text-sm text-red-600">Failed to load books. Please try again.</p>
       )}
 
+      {(statusMutation.isError || removeMutation.isError) && (
+        <p className="mb-4 text-sm text-red-600">
+          Could not update your shelf. Please try again.
+        </p>
+      )}
+
       {!isLoading && !isError && logs?.length === 0 && (
         <div className="text-center py-16 text-stone-400">
           <p className="text-4xl mb-3">📚</p>
@@ -88,7 +138,13 @@ export default function Books() {
       {!isLoading && !isError && logs?.length > 0 && (
         <div className="flex flex-col gap-3">
           {logs.map((log) => (
-            <BookCard key={log.id} log={log} />
+            <BookCard
+              key={log.id}
+              log={log}
+              onStatusChange={handleStatusChange}
+              onRemove={handleRemove}
+              pendingAction={getPendingAction(log)}
+            />
           ))}
         </div>
       )}
