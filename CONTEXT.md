@@ -6,13 +6,13 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 7 — User Feedback and Iteration**
+**Phase 7 — User Feedback and Iteration — Complete**
 
-Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
+Phases 1, 2, 3, 4, 5, 6, and 7 are complete and closed.
 
 ---
 
-## Phase 7 — In Progress
+## Phase 7 — Complete
 
 - [x] #74 Phase 7.3 — Typeahead book search (merged PR #77)
 - [x] #78 Typeahead UX improvements — lite mode + full results list (merged PR #79)
@@ -27,7 +27,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #100 Phase 7.8 — Backfill metadata for existing books (merged PR #101)
 - [x] #102 Phase 7.9 — Shelf card quick actions (merged PR #103)
 - [ ] #76 Backlog — Social friends layer (unscoped; not implemented in this pass)
-- [ ] Epic #71 open
+- [x] Epic #71 closed
 
 ---
 
@@ -103,6 +103,11 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-17 — Phase 7 closeout (#71)
+- Closed the Phase 7 epic after completing the scoped user-feedback iteration work: CSV import, search/typeahead improvements, chat persistence/context fixes, frontend redesign, rich detail page, two-click shelf picker, automatic metadata enrichment, metadata backfill, and shelf-card quick actions.
+- #71 is closed and marked `Done` in the `bookshelf` GitHub Project.
+- #76 remains an unscoped backlog item and was not part of the Phase 7 closeout.
 
 ### 2026-05-17 — Phase 7.8 — Existing metadata backfill (PR #101, closes #100)
 - `scripts/backfill_metadata.py`: new local/admin command to enrich existing books missing cover or description. Supports `--email`, `--limit`, and `--dry-run`; prints considered/updated/unchanged/failed counts.
