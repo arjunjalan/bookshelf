@@ -144,8 +144,10 @@ export default function Chat() {
         }
       }
 
-      // Stream done — query will pick up the saved turn; clear local overlay
-      queryClient.invalidateQueries({ queryKey: ['chat-messages', resolvedSessionIdRef.current] })
+      // Await the messages refetch before clearing liveMessages — otherwise the window
+      // blanks for the duration of the round-trip (setLiveMessages clears instantly,
+      // but sessionMessages is still [] until invalidateQueries resolves).
+      await queryClient.invalidateQueries({ queryKey: ['chat-messages', resolvedSessionIdRef.current] })
       queryClient.invalidateQueries({ queryKey: ['chat-sessions'] })
       setLiveMessages([])
     } catch (err) {
