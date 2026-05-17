@@ -6,16 +6,22 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Post-Phase 8 — Social Layer — Complete**
+**Post-Phase 8 — Social Layer — Mostly Complete**
 
 Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed. The social layer shipped after production deployment.
+Backend profile/follow/feed work is in place; the remaining social follow-up is frontend user discovery (`#132`).
 
 ---
 
-## Post-Phase 8 — Social Layer — Complete
+## Post-Phase 8 — Social Layer — Mostly Complete
 
 - [x] Social profiles, follow graph, feed, onboarding (merged PR #129, commit `94b256c`)
 - [x] #124, #125, #126, #127 closed by PR #129
+- [x] #131 social feedback polish closed by PR #130
+- [ ] #132 Social S2b — Frontend user discovery
+      - dedicated discover/browse users UI is still missing
+      - reuse `GET /users/search` for search/typeahead
+      - surface public profiles and follow actions from the discovery view
 - [x] #76 Backlog — Social friends layer implemented as profiles, follows, and feed
 
 ---
@@ -135,6 +141,11 @@ Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed. The social layer ship
 - `frontend/src/pages/UserProfile.jsx`: public profile page with optimistic follow/unfollow.
 - `frontend/src/App.jsx`, `Layout.jsx`, and `BottomNav.jsx`: adds `/feed`, `/profile`, and `/users/:handle`; `/settings` redirects to `/profile`; desktop nav includes Feed/Profile; mobile bottom nav now has Home/Shelf/Stats/Chat/Feed.
 - `app/services/chat.py`: cold-start LLM prompt now includes declared social-profile genres/authors when the user has fewer than 10 finished books.
+
+### 2026-05-17 — Social follow-up — frontend user discovery ticket (#132)
+- Created `#132` to track the missing frontend discovery surface for the social graph.
+- Scope is frontend-only: browse/search users, typeahead or search-driven discovery, and entry points into public profiles and follow/unfollow.
+- Backend discovery primitives already exist (`GET /users/search`, `/users/{handle}`); this ticket captures the missing UI layer explicitly.
 
 ### 2026-05-17 — Mobile M2 — Offline caching strategy (PR #123, closes #117)
 - `frontend/public/sw.js`: full caching strategy replacing the M1 pass-through. Static assets (`/assets/*`, icons): cache-first — Vite content hashes guarantee freshness. API calls (cross-origin to Render/localhost): network-first with cache fallback. Cover images (`covers.openlibrary.org`): cache-first. Navigation: network-first → cached `/` → `offline.html`. Activate handler purges old caches by name to prevent stale accumulation across deploys. Font CDN (googleapis/gstatic) passes through to browser.
