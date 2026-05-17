@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { socialApi } from '../api/social'
+import client from '../api/client'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { Input, Textarea } from '../components/ui/Input'
@@ -8,11 +9,66 @@ import ErrorBanner from '../components/ui/ErrorBanner'
 
 const HANDLE_RE = /^[a-z0-9_]{1,30}$/
 
-function TagInput({ label, values, onChange }) {
-  const [draft, setDraft] = useState('')
+const GENRE_SUGGESTIONS = [
+  'Biography',
+  'Business',
+  'Classics',
+  'Fantasy',
+  'History',
+  'Horror',
+  'Literary fiction',
+  'Memoir',
+  'Mystery',
+  'Nonfiction',
+  'Philosophy',
+  'Poetry',
+  'Psychology',
+  'Romance',
+  'Science',
+  'Science fiction',
+  'Self-help',
+  'Thriller',
+]
 
-  function add() {
-    const v = draft.trim()
+const AUTHOR_SUGGESTIONS = [
+  'Agatha Christie',
+  'Andy Weir',
+  'Brandon Sanderson',
+  'Celeste Ng',
+  'Colson Whitehead',
+  'Emily St. John Mandel',
+  'Frank Herbert',
+  'George Orwell',
+  'Haruki Murakami',
+  'James Clear',
+  'Jane Austen',
+  'Kazuo Ishiguro',
+  'Margaret Atwood',
+  'Neil Gaiman',
+  'Octavia E. Butler',
+  'Toni Morrison',
+  'Ursula K. Le Guin',
+]
+
+function uniqSorted(values) {
+  return [...new Set(values.filter(Boolean).map((v) => v.trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b))
+}
+
+function TagInput({ label, values, onChange, suggestions = [] }) {
+  const [draft, setDraft] = useState('')
+  const inputId = useId()
+
+  const normalizedValues = new Set(values.map((v) => v.toLowerCase()))
+  const matches = draft.trim()
+    ? suggestions.filter((item) =>
+        item.toLowerCase().includes(draft.trim().toLowerCase()) &&
+        !normalizedValues.has(item.toLowerCase())
+      ).slice(0, 6)
+    : suggestions.filter((item) => !normalizedValues.has(item.toLowerCase())).slice(0, 6)
+
+  function add(value = draft) {
+    const v = value.trim()
     if (v && !values.includes(v)) onChange([...values, v])
     setDraft('')
   }
@@ -23,16 +79,31 @@ function TagInput({ label, values, onChange }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-stone-700">{label}</label>
+      <label htmlFor={inputId} className="text-sm font-medium text-stone-700">{label}</label>
       <div className="flex gap-2">
         <Input
+          id={inputId}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
-          placeholder="Type and press Enter"
+          placeholder="Type to search or add your own"
         />
         <Button variant="ghost" type="button" size="sm" onClick={add}>Add</Button>
       </div>
+      {matches.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {matches.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => add(item)}
+              className="rounded-full border border-stone-200 px-2.5 py-1.5 text-xs text-stone-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      )}
       {values.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {values.map((v, i) => (
@@ -59,6 +130,12 @@ export default function Settings() {
           if (err.response?.status === 404) return null
           throw err
         }),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: books = [] } = useQuery({
+    queryKey: ['books', 'profile-suggestions'],
+    queryFn: () => client.get('/books', { params: { limit: 100 } }).then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   })
 
@@ -156,6 +233,14 @@ export default function Settings() {
     : null
 
   const submitDisabled = isPending || checking || !handleAvailable || !!handleError
+  const genreSuggestions = uniqSorted([
+    ...GENRE_SUGGESTIONS,
+    ...books.map((book) => book.genre),
+  ])
+  const authorSuggestions = uniqSorted([
+    ...AUTHOR_SUGGESTIONS,
+    ...books.map((book) => book.author),
+  ])
 
   if (isLoading) {
     return (
@@ -168,7 +253,7 @@ export default function Settings() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold text-stone-900">Settings</h1>
+      <h1 className="text-xl font-semibold text-stone-900">Profile</h1>
 
       <Card className="p-6">
         <h2 className="text-base font-semibold text-stone-900 mb-4">Public profile</h2>
@@ -224,12 +309,14 @@ export default function Settings() {
             label="Favourite genres (declared preferences for reading suggestions)"
             values={topGenres}
             onChange={setTopGenres}
+            suggestions={genreSuggestions}
           />
 
           <TagInput
             label="Favourite authors (declared preferences for reading suggestions)"
             values={favouriteAuthors}
             onChange={setFavouriteAuthors}
+            suggestions={authorSuggestions}
           />
 
           <ErrorBanner message={activeError?.response?.data?.detail} />

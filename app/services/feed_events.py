@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.feed_event import EventType, FeedEvent
 from app.models.reading_log import ReadingLog, ReadingStatus
 from app.models.social import Follow
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ def get_feed(
     q = (
         db.query(FeedEvent)
         .options(
-            joinedload(FeedEvent.user).joinedload("profile"),
+            joinedload(FeedEvent.user).joinedload(User.profile),
             joinedload(FeedEvent.book),
         )
         .filter(

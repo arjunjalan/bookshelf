@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
 import Landing from './pages/Landing'
@@ -32,7 +32,8 @@ export default function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/import" element={<ImportCSV />} />
           <Route path="/feed" element={<Feed />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Settings />} />
+          <Route path="/settings" element={<Navigate to="/profile" replace />} />
           <Route path="/users/:handle" element={<UserProfile />} />
         </Route>
       </Route>

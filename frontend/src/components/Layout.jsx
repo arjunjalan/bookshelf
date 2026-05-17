@@ -68,7 +68,7 @@ export default function Layout() {
               <Link to="/chat" className={navCls('/chat')}>Chat</Link>
               <Link to="/feed" className={navCls('/feed')}>Feed</Link>
               <Link to="/import" className={navCls('/import')}>Import</Link>
-              <Link to="/settings" className={navCls('/settings')}>Settings</Link>
+              <Link to="/profile" className={navCls('/profile')}>Profile</Link>
               <span className="text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}
@@ -100,7 +100,7 @@ export default function Layout() {
             <div className="sm:hidden border-t border-stone-100 py-2 flex flex-col">
               <Link to="/books/add" className={mobileLinkCls('/books/add')} onClick={() => setMenuOpen(false)}>Add book</Link>
               <Link to="/import" className={mobileLinkCls('/import')} onClick={() => setMenuOpen(false)}>Import</Link>
-              <Link to="/settings" className={mobileLinkCls('/settings')} onClick={() => setMenuOpen(false)}>Settings</Link>
+              <Link to="/profile" className={mobileLinkCls('/profile')} onClick={() => setMenuOpen(false)}>Profile</Link>
               <span className="py-3 text-sm text-stone-400">{user?.email}</span>
               <button
                 onClick={handleLogout}

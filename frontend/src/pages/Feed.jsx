@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { socialApi } from '../api/social'
 import Card from '../components/ui/Card'
@@ -12,7 +14,9 @@ const EVENT_LABEL = {
 }
 
 function CoverThumb({ book }) {
-  if (!book.cover_url) {
+  const [failed, setFailed] = useState(false)
+
+  if (!book.cover_url || failed) {
     return (
       <div className="w-10 h-14 rounded bg-stone-100 flex items-center justify-center text-stone-300 text-lg shrink-0">
         ▪
@@ -24,10 +28,7 @@ function CoverThumb({ book }) {
       src={book.cover_url}
       alt={book.title}
       className="w-10 h-14 object-cover rounded shrink-0"
-      onError={(e) => {
-        e.target.style.display = 'none'
-        e.target.nextSibling.style.display = 'flex'
-      }}
+      onError={() => setFailed(true)}
     />
   )
 }
@@ -115,10 +116,27 @@ export default function Feed() {
       <h1 className="text-xl font-semibold text-stone-900">Feed</h1>
 
       {events.length === 0 ? (
-        <Card className="p-6 text-center">
-          <p className="text-stone-500 text-sm">
-            Nothing here yet. Follow people to see their reading activity.
-          </p>
+        <Card className="p-6 text-center flex flex-col items-center gap-3">
+          <div>
+            <p className="font-medium text-stone-900">No reading activity yet</p>
+            <p className="text-stone-500 text-sm mt-1">
+              Log a book, rate something you've read, or follow people to populate your feed.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link
+              to="/books/add"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+            >
+              Add a book
+            </Link>
+            <Link
+              to="/profile"
+              className="rounded-lg border border-stone-200 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+            >
+              Set up profile
+            </Link>
+          </div>
         </Card>
       ) : (
         <div className="flex flex-col gap-2">

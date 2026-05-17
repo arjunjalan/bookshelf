@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import client from '../api/client'
+import { socialApi } from '../api/social'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import ErrorBanner from '../components/ui/ErrorBanner'
@@ -13,8 +14,10 @@ const SUGGESTIONS = [
   'How has my reading pace changed?',
 ]
 
-function greeting(email) {
-  const name = email.split('@')[0]
+function greeting(email, socialProfile) {
+  const name = socialProfile?.handle
+    ? `@${socialProfile.handle}`
+    : socialProfile?.display_name || email.split('@')[0]
   const hour = new Date().getHours()
   const time = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
   return `${time}, ${name}`
@@ -105,6 +108,18 @@ export default function Home() {
     queryFn: () => client.get('/reader-profile').then((r) => r.data),
   })
 
+  const { data: socialProfile } = useQuery({
+    queryKey: ['social-profile', 'me'],
+    queryFn: () =>
+      socialApi.getMyProfile()
+        .then((r) => r.data)
+        .catch((err) => {
+          if (err.response?.status === 404) return null
+          throw err
+        }),
+    staleTime: 5 * 60 * 1000,
+  })
+
   const isEmpty = !logsLoading && allLogs.length === 0
 
   const currentYear = new Date().getFullYear()
@@ -151,7 +166,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h2 className="text-xl font-semibold text-stone-900">{greeting(user.email)}</h2>
+      <h2 className="text-xl font-semibold text-stone-900">{greeting(user.email, socialProfile)}</h2>
 
       {/* Currently reading */}
       {currentlyReading.length > 0 && (
