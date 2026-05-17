@@ -106,8 +106,11 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - New `frontend/src/components/ui/`: `Button` (primary/ghost variants, md/sm sizes), `Input`/`Textarea`/`Select` (unified indigo focus ring, forwardRef on Input), `Card` (no default padding), `Badge` (canonical STATUS_COLOR + STATUS_LABEL, replaces duplicates in BookCard and BookDetail), `ErrorBanner` (conditional render).
 - All 9 pages + 2 components updated: stone-900 primary buttons → indigo-600; focus rings → ring-indigo-500; active tab/chat-session → indigo-600/indigo-50; user chat bubble → indigo-600; chart BAR_COLOR → `#4f46e5`; nav hover/active → indigo-600 via `useLocation`; auth + 404 links → indigo-600.
 
+### 2026-05-16 — Open Library cover stub fix (PR #91)
+- `frontend/src/components/BookCard.jsx` + `frontend/src/pages/BookDetail.jsx`: appended `?default=false` to Open Library cover URLs. Without it, Open Library returns a 1×1 pixel GIF for missing covers — a valid image that never triggers `onError`, leaving an invisible element and the hidden placeholder. `?default=false` makes the API return HTTP 404 instead, so `onError` fires and the gray placeholder shows correctly.
+
 ### 2026-05-16 — Book cover image fallback (PR #90)
-- `frontend/src/components/BookCard.jsx` + `frontend/src/pages/BookDetail.jsx`: when `cover_url` is null but `isbn` is present, fall back to `https://covers.openlibrary.org/b/isbn/{isbn}-M.jpg`. `onError` hides the img and shows the gray placeholder if Open Library has no cover for that ISBN either.
+- `frontend/src/components/BookCard.jsx` + `frontend/src/pages/BookDetail.jsx`: when `cover_url` is null but `isbn` is present, fall back to `https://covers.openlibrary.org/b/isbn/{isbn}-M.jpg?default=false`. `onError` hides the img and shows the gray placeholder if Open Library has no cover for that ISBN either.
 
 ### 2026-05-16 — New chat button fix (PR #86)
 - `frontend/src/pages/Chat.jsx`: `handleNewChat` was setting `activeSessionId = null`, but `effectiveSessionId` falls back to `sessions[0]?.id` when `activeSessionId` is null — so clicking "+ New chat" appeared to do nothing. Fixed by using `'new'` as a sentinel value; `effectiveSessionId` returns `null` on `'new'`, giving a genuinely blank chat state without triggering the auto-select fallback.
