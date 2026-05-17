@@ -23,7 +23,7 @@ async function registerViaUI(page) {
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(PASSWORD)
   await page.getByRole('button', { name: 'Create account' }).click()
-  await expect(page).toHaveURL('/books')
+  await expect(page).toHaveURL('/home')
   return email
 }
 
