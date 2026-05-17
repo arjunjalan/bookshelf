@@ -19,7 +19,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #80 Full search pagination — useInfiniteQuery + Load more (merged PR #80, Codex)
 - [x] #72 Phase 7.1 — Bulk CSV book import (merged PR #81)
 - [x] #82 Chat reading list context fix — inject read books into system prompt (PR #83 + direct commits)
-- [ ] #73 Phase 7.2 — Chat history persistence
+- [x] #73 Phase 7.2 — Chat history persistence (merged PR #84)
 - [ ] #75 Phase 7.4 — Frontend redesign
 - [ ] #76 Phase 7.5 — Social friends layer
 - [ ] Epic #71 open
@@ -98,6 +98,15 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-16 — Phase 7.2 — Chat history persistence (PR #84, closes #73)
+- `app/models/chat.py`: `ChatSession` (id, user_id, title, created_at, updated_at) + `ChatMessage` (id, session_id, role enum, content, created_at) ORM models. `MessageRole` is a `str, enum.Enum` with values `user`/`assistant`.
+- `app/models/user.py`: `chat_sessions` relationship added (`cascade="all, delete-orphan"`).
+- `alembic/versions/0008_chat_sessions.py`: creates `messagerole` enum, `chat_sessions` table (indexed on `user_id`), `chat_messages` table (indexed on `session_id`). Both cascade-delete on parent removal.
+- `app/services/chat_sessions.py`: `list_sessions` (ordered by `updated_at DESC`), `create_session` (enforces 5-session cap — evicts oldest first), `get_or_create_session`, `get_messages` (last 50, returned in chronological order), `messages_as_history`, `add_turn` (saves user+assistant rows, issues explicit `UPDATE ... SET updated_at = NOW()` — ORM `onupdate` only fires on direct attribute mutation, not child inserts).
+- `app/routers/chat.py`: two new GET endpoints (`/chat/sessions`, `/chat/sessions/{id}/messages`); `POST /chat` now accepts `session_id`, loads DB history as LLM context, and emits `session_id` in every SSE chunk so the frontend captures new session IDs without an extra roundtrip. Turn saved inside generator closure after `[DONE]`.
+- `app/schemas/chat.py`: `session_id: UUID | None` added to `ChatRequest`; dead `history` field removed; `ChatSessionRead` and `ChatMessageRead` added.
+- `frontend/src/pages/Chat.jsx`: full rewrite with left sidebar (52 w, session list + "+ New chat" button). Key patterns: `effectiveSessionId = activeSessionId ?? sessions[0]?.id ?? null` avoids `setState-in-effect`; `liveMessages` holds in-flight streaming state only; `displayMessages = useMemo(() => [...sessionMessages, ...liveMessages])` layers them. `resolvedSessionIdRef` tracks the actual session ID through the streaming closure so post-stream cache invalidation uses the correct key even when a new session was created mid-stream.
 
 ### 2026-05-16 — Chat context fixes (PRs #83 + direct commits, closes #82)
 - `app/services/chat.py`: `_format_books()` added — queries `reading_logs` joined with `books`, filtered to `status == READ` only (want-to-read excluded to avoid token bloat from large Goodreads imports), ordered by `end_date` descending. Each entry formatted as `- Title by Author (read, finished YYYY-MM-DD, rated N/5)`.
