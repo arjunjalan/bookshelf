@@ -2,7 +2,7 @@
 
 Bookshelf is a full-stack reading companion for tracking a personal library, logging reading history, importing Goodreads data, reviewing reading analytics, and chatting with an LLM that has context from your shelf.
 
-The app is built as a production-style web application: authenticated API, persistent Postgres data model, background metadata enrichment, analytics endpoints, a React frontend, and deployment targets for Render, Vercel, and Supabase.
+The app is built as a production-style web application: authenticated API, persistent Postgres data model, background metadata enrichment, analytics endpoints, a responsive React frontend, PWA install support, offline caching, and deployment targets for Render, Vercel, and Supabase.
 
 ## Live App
 
@@ -15,6 +15,7 @@ Render free-tier services may cold start after inactivity.
 ## What It Does
 
 - Track books across `Want to Read`, `Reading`, and `Read` shelves.
+- Start from a logged-out landing page, then use a post-login home dashboard for current reading, recent finishes, top preferences, and chat prompts.
 - Add books through Open Library search with a quick shelf picker.
 - Automatically enrich books with cover art, descriptions, publication dates, and page counts where available.
 - Import a Goodreads CSV export, including shelf, dates, rating, and notes.
@@ -22,6 +23,7 @@ Render free-tier services may cold start after inactivity.
 - Review analytics for reading volume, genre/author distribution, average rating, and reading pace.
 - Build a reader profile from historical preferences and reading behavior.
 - Chat with a reading companion backed by OpenRouter/OpenAI-compatible chat models, with persisted conversation history and shelf-aware context.
+- Install the frontend as a PWA with app icons, standalone display mode, iOS safe-area handling, and offline fallbacks for cached app routes, API reads, and book cover images.
 
 ## Stack
 
@@ -31,6 +33,7 @@ Render free-tier services may cold start after inactivity.
 | Database | PostgreSQL, SQLAlchemy 2.0, Alembic |
 | Auth | Stateless JWT, bcrypt password hashes |
 | Frontend | React, Vite, Tailwind CSS, TanStack Query, Axios |
+| PWA | Web app manifest, custom service worker, install icons, offline fallback |
 | Metadata | Open Library API behind a MetadataAdapter |
 | LLM | OpenRouter via OpenAI-compatible client behind an LLMAdapter |
 | Testing | Pytest, Playwright |
@@ -54,8 +57,10 @@ bookshelf/
 │   ├── src/
 │   │   ├── api/        # Axios client and auth interceptor
 │   │   ├── contexts/   # AuthContext
-│   │   ├── components/ # Layout, route guards, shelf cards, UI primitives
-│   │   └── pages/      # Shelf, add book, detail, stats, chat, import
+│   │   ├── components/ # Layout, bottom nav, route guards, shelf cards, UI primitives
+│   │   └── pages/      # Landing, home, shelf, add book, detail, stats, chat, import
+│   ├── public/         # Manifest, service worker, icons, offline fallback
+│   └── scripts/        # Icon generation
 ├── alembic/            # Database migrations
 ├── scripts/            # Local dev and maintenance scripts
 ├── tests/              # Backend and metadata tests
@@ -70,6 +75,7 @@ Core principles:
 - Schema changes go through Alembic migrations.
 - Provider integrations go through adapter classes in `app/adapters/`.
 - Frontend API calls go through `frontend/src/api/client.js`.
+- The frontend is a single-page app with Vercel rewrites and a custom service worker for PWA/offline behavior.
 
 ## Local Development
 
@@ -142,6 +148,7 @@ npm install --prefix frontend
 npm run dev --prefix frontend
 npm run lint --prefix frontend
 npm run build --prefix frontend
+npm run generate-icons --prefix frontend
 ```
 
 End-to-end tests:
@@ -160,6 +167,23 @@ uv run python scripts/backfill_metadata.py --email you@example.com --dry-run
 ```
 
 Omit `--email` only for local/admin backfills across all users.
+
+## Frontend Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Logged-out landing page |
+| `/login` | Sign in |
+| `/register` | Create an account |
+| `/home` | Authenticated dashboard |
+| `/books` | Shelf grouped by reading status |
+| `/books/add` | Search Open Library or add a book manually |
+| `/books/{id}` | Rich book detail and reading log editor |
+| `/stats` | Analytics dashboard |
+| `/chat` | Reader-aware chat companion |
+| `/import` | Goodreads CSV import |
+
+On mobile, primary authenticated navigation is handled by the fixed bottom nav: Home, Shelf, Stats, and Chat. Secondary actions like Add book, Import, and Log out stay in the mobile menu.
 
 ## API Surface
 
@@ -193,6 +217,20 @@ All endpoints except `/health`, `/auth/register`, and `/auth/login` require a Be
 | `POST` | `/chat` | Stream a shelf-aware assistant response |
 
 Reading status values are `want_to_read`, `reading`, and `read`.
+
+## PWA and Offline Behavior
+
+The frontend includes a PWA manifest at `frontend/public/manifest.json`, install icons generated from `frontend/public/icon.svg`, and a custom service worker at `frontend/public/sw.js`.
+
+Caching strategy:
+
+- Static Vite assets and local public images use cache-first caching.
+- Open Library cover images use cache-first caching.
+- Cross-origin API `GET` requests use network-first caching with a cached fallback.
+- Navigations use network-first caching, then cached app shell, then `offline.html`.
+- Old named caches are removed during service worker activation.
+
+iOS support includes standalone mode metadata, `apple-touch-icon`, translucent status bar mode, and safe-area padding for the top nav and bottom nav.
 
 ## Data Model Notes
 
@@ -228,15 +266,19 @@ Completed:
 
 - Core authenticated API and user-scoped data model
 - React frontend and protected app shell
+- Logged-out landing page and authenticated home dashboard
 - Open Library metadata search and enrichment
 - Goodreads CSV import
 - Reading analytics dashboard
 - Reader profile endpoint
 - Streaming LLM chat with persisted sessions
+- Mobile UI polish with bottom navigation and iOS safe-area handling
+- PWA foundation with manifest, install icons, service worker, and offline fallback
 - Production deployment
 
 Backlog:
 
 - Social/friends layer
 - Broader recommendation workflows
+- Push notifications and background sync, if the product needs them
 - Production hardening beyond the current personal-app deployment profile
