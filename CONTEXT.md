@@ -99,6 +99,9 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 
 ## Session Notes
 
+### 2026-05-16 — Chat window wipe fix (PR #85)
+- `frontend/src/pages/Chat.jsx`: awaiting `queryClient.invalidateQueries` for `chat-messages` before calling `setLiveMessages([])` — previously the clear fired before the refetch resolved, leaving `sessionMessages=[]` and `liveMessages=[]` simultaneously and blanking the window.
+
 ### 2026-05-16 — Phase 7.2 — Chat history persistence (PR #84, closes #73)
 - `app/models/chat.py`: `ChatSession` (id, user_id, title, created_at, updated_at) + `ChatMessage` (id, session_id, role enum, content, created_at) ORM models. `MessageRole` is a `str, enum.Enum` with values `user`/`assistant`.
 - `app/models/user.py`: `chat_sessions` relationship added (`cascade="all, delete-orphan"`).
