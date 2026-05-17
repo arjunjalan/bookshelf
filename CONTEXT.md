@@ -23,6 +23,7 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 - [x] #75 Phase 7.4 — Frontend redesign (merged PR #89)
 - [x] #94 Phase 7.6 — Rich book detail page (merged PR #96)
 - [x] #92 Phase 7.5 — Streamline add-book to a two-click shelf picker (merged PR #97)
+- [x] #98 Phase 7.7 — Automatic metadata enrichment after add/import (merged PR #99)
 - [ ] #76 Backlog — Social friends layer (unscoped; not implemented in this pass)
 - [ ] Epic #71 open
 
@@ -100,6 +101,14 @@ Phases 1, 2, 3, 4, 5, and 6 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-17 — Phase 7.7 — Automatic metadata enrichment (PR #99, closes #98)
+- `app/services/metadata_enrichment.py`: new reusable enrichment service. Searches Open Library through `MetadataAdapter` with ISBN first and title/author fallback; scores candidates; fills missing `cover_url`, `description`, `page_count`, and `published_date` only; preserves existing user/imported values.
+- `app/routers/books.py`: `POST /books` schedules metadata enrichment with FastAPI `BackgroundTasks` after the book is committed.
+- `app/services/import_csv.py` + `app/routers/import_csv.py`: Goodreads import accepts an `on_book_imported` callback and schedules background enrichment for newly imported rows. Scheduling errors are logged and do not fail the import.
+- `frontend/src/pages/BookDetail.jsx`: briefly refetches while cover/description are missing (2s interval, max 30s) so enrichment can appear without a manual reload after quick-add/import.
+- `tests/test_metadata_enrichment.py`: covers missing-field-only enrichment and create/import scheduling. `tests/test_e2e.py` no-ops the enrichment scheduler so backend smoke tests do not make Open Library calls.
+- Verification on PR #99: `lint-frontend`, backend `test`, and `e2e` all passed before merge.
 
 ### 2026-05-17 — Phase 7.6 — Rich book detail page (PR #96, closes #94)
 - `frontend/src/pages/BookDetail.jsx`: reworked into a richer responsive detail view with large cover art (`cover_url` first, Open Library ISBN `-L` fallback), metadata grid, description section, and a fuller reading-record section.
