@@ -6,9 +6,18 @@ Working state for the current build session. Updated by the agent at the end of 
 
 ## Current Phase
 
-**Phase 7 — User Feedback and Iteration — Complete**
+**Phase 8 — Production Deployment — Complete**
 
-Phases 1, 2, 3, 4, 5, 6, and 7 are complete and closed.
+Phases 1, 2, 3, 4, 5, 6, 7, and 8 are complete and closed.
+
+---
+
+## Phase 8 — Complete
+
+- [x] #51 Phase 8 — Production Deployment (PRs #109, #110)
+- Frontend: https://bookshelf-rose.vercel.app
+- Backend: https://bookshelf-jhno.onrender.com
+- Database: Supabase (project ref: ccjpuatthjwqfxkearfz)
 
 ---
 
@@ -103,6 +112,15 @@ Phases 1, 2, 3, 4, 5, 6, and 7 are complete and closed.
 ---
 
 ## Session Notes
+
+### 2026-05-17 — Phase 8 — Production Deployment (PRs #109, #110, closes #51)
+- `frontend/vercel.json`: SPA rewrite rule (`/(.*) → /index.html`) so React Router handles all routes; without it refreshing on `/books` etc. returns 404 on Vercel.
+- `Dockerfile`: CMD updated to run `uv run alembic upgrade head && uv run uvicorn ...` — Render free tier has no pre-deploy command for Docker services so migrations run at container start.
+- Supabase connection: must use the **connection pooler URL** (`aws-0-[region].pooler.supabase.com:6543`) not the direct URL — Render resolves the direct host to IPv6 which is unreachable on free tier.
+- CORS_ORIGINS env var on Render set to `https://bookshelf-rose.vercel.app`.
+- VITE_API_URL on Vercel set to `https://bookshelf-jhno.onrender.com`.
+- All 8 Alembic migrations ran cleanly against Supabase on first deploy.
+- Free tier cold starts (~30-60s) on Render are expected; upgrade to $7/month Starter to eliminate.
 
 ### 2026-05-17 — Phase 7 closeout (#71)
 - Closed the Phase 7 epic after completing the scoped user-feedback iteration work: CSV import, search/typeahead improvements, chat persistence/context fixes, frontend redesign, rich detail page, two-click shelf picker, automatic metadata enrichment, metadata backfill, and shelf-card quick actions.
