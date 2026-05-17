@@ -11,7 +11,14 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [skipOnboarding, setSkipOnboarding] = useState(false)
+  const [skipOnboarding, setSkipOnboarding] = useState(
+    () => sessionStorage.getItem('bs_onboarding_skipped') === '1'
+  )
+
+  function handleSkipOnboarding() {
+    sessionStorage.setItem('bs_onboarding_skipped', '1')
+    setSkipOnboarding(true)
+  }
 
   const { data: socialProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['social-profile', 'me'],
@@ -113,7 +120,7 @@ export default function Layout() {
 
       <BottomNav />
       {showOnboarding && (
-        <OnboardingOverlay onSkip={() => setSkipOnboarding(true)} />
+        <OnboardingOverlay onSkip={handleSkipOnboarding} />
       )}
     </div>
   )
