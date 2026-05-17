@@ -2,6 +2,7 @@ import csv
 import io
 import logging
 import uuid
+from collections.abc import Callable
 from datetime import date, datetime
 from typing import Optional
 
@@ -78,6 +79,7 @@ def import_goodreads_csv(
     db: Session,
     user_id: uuid.UUID,
     content: bytes,
+    on_book_imported: Callable[[uuid.UUID], None] | None = None,
 ) -> ImportSummary:
     try:
         text = content.decode("utf-8-sig")  # strip BOM if present
@@ -153,6 +155,16 @@ def import_goodreads_csv(
         db.add(log)
         try:
             db.commit()
+            db.refresh(book)
+            if on_book_imported is not None:
+                try:
+                    on_book_imported(book.id)
+                except Exception:
+                    logger.info(
+                        "Failed to schedule metadata enrichment for row %d",
+                        row_num,
+                        exc_info=True,
+                    )
             imported += 1
         except IntegrityError:
             db.rollback()
